@@ -36,11 +36,11 @@ mongoose
     console.error("MongoDB connection failed:", error);
   });
 app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to Express & TypeScript Server");
+  res.send("Server NodeJS");
 });
 
 app.get("/api", (req: Request, res: Response) => {
-  res.send("Welcome to Express & TypeScript Server");
+  res.send("Welcome to Express & TypeScript Servedsadasdsr");
 })
 
 //
