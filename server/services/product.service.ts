@@ -25,8 +25,6 @@ export const getProductsService = asyncHandler(
       minPrice,
       maxPrice,
       brand,
-      category,
-      isActive,
     } = req.query;
 
     const query: any = {isActive: true};
