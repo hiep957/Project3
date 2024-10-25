@@ -11,17 +11,16 @@ import UserModel from "../models/User.model";
 import TokenModel from "../models/Token.model";
 import { SignOptions } from "jsonwebtoken";
 import { AuthenticatedRequestBody } from "../interfaces/CustomType";
-import { IUser } from "../interfaces/User";
+import { ICartUser, IUser } from "../interfaces/User";
 import verifyRefreshToken from "../middlewares/auth/verifyRefreshToken";
 import { authorizationRoles } from "../constants/auth";
 
 export const signupService = asyncHandler(
-  
   async (req: Request, res: Response, next: NextFunction) => {
     let role = authorizationRoles.user;
-    let emailAdmin = process.env.ADMIN_EMAIL as string[]| undefined;
-    
-    if(emailAdmin?.includes(req.body.email)) {
+    let emailAdmin = process.env.ADMIN_EMAIL as string[] | undefined;
+
+    if (emailAdmin?.includes(req.body.email)) {
       role = authorizationRoles.admin;
     }
     const { name, surname, email, password } = req.body;
@@ -172,7 +171,7 @@ export const testService = asyncHandler(
 
 export const updateService = asyncHandler(
   async (
-    req: AuthenticatedRequestBody<IUser>,
+    req: AuthenticatedRequestBody<ICartUser>,
     res: Response,
     next: NextFunction
   ) => {
@@ -204,26 +203,28 @@ export const updateService = asyncHandler(
   }
 );
 
-export const logoutService = asyncHandler(async (req, res, next) => {
-  const refreshToken = req.cookies.refreshToken;
-  console.log(refreshToken);
-  const token = await TokenModel.findOne({ refreshToken });
-  if (!token) {
-    throw new BadRequestError("Invalid token");
+export const logoutService = asyncHandler(
+  async (req: AuthenticatedRequestBody<IUser>, res, next) => {
+    const refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken);
+    const token = await TokenModel.findOne({ refreshToken });
+    if (!token) {
+      throw new BadRequestError("Invalid token");
+    }
+    const userId = await verifyRefreshToken(refreshToken);
+
+    if (!userId) {
+      throw new BadRequestError("Invalid token userID");
+    }
+
+    await TokenModel.deleteOne({ refreshToken });
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({ message: "Logout successful" });
   }
-  const userId = await verifyRefreshToken(refreshToken);
-
-  if (!userId) {
-    throw new BadRequestError("Invalid token userID");
-  }
-
-  await TokenModel.deleteOne({ refreshToken });
-
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
-
-  res.status(200).json({ message: "Logout successful" });
-});
+);
 
 export const refreshTokenService = asyncHandler(async (req, res, next) => {
   const refreshToken = req.cookies.refreshToken;
@@ -280,16 +281,20 @@ export const refreshTokenService = asyncHandler(async (req, res, next) => {
     status: "Refresh Token successful",
     data,
   });
-
 });
 
-
-export const getAuthProfileService = asyncHandler( async (req: AuthenticatedRequestBody<IUser>, res: Response, next: NextFunction) => {
-  const user = await UserModel.findById(req.user?._id);
-  if(!user) {
-    throw new BadRequestError("User not found");
+export const getAuthProfileService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<IUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const user = await UserModel.findById(req.user?._id);
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+    console.log("User", user);
+    res.status(200).json({ user });
+    // const user = await UserModel.findById(req.user);
   }
-  console.log("User", user);
-  res.status(200).json({ user });
-  // const user = await UserModel.findById(req.user);
-})
+);

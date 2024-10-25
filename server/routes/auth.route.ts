@@ -15,7 +15,7 @@ router.post('/login', loginController);
 // router.post('/login', loginController);
 router.get("/test", isAuth, testController);
 router.put('/update/:userId',isAuth, updateController);
-router.post('/logout', logoutController);
+router.post('/logout',isAuth, logoutController);
 router.post('/refresh-token', refreshTokenController);
 router.get('/me',isAuth, getAuthProfileController);
 export default router;

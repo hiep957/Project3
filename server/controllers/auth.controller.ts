@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
   getAuthProfileService,
   loginService,
+  logoutService,
   refreshTokenService,
   signupService,
   testService,
@@ -39,7 +40,7 @@ export const logoutController = (
   req: Request,
   res: Response,
   next: NextFunction
-) => loginService(req, res, next);
+) => logoutService(req, res, next);
 
 export const refreshTokenController = (
   req: Request,

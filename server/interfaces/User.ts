@@ -1,4 +1,5 @@
 import { Request } from "express";
+import mongoose from "mongoose";
 
 export interface IUser {
   _id: string;
@@ -11,6 +12,12 @@ export interface IUser {
   accessToken?: string;
   refreshToken?: string;
   role?: string;
+}
+
+export interface ICartUser extends IUser {
+  productId: mongoose.Schema.Types.ObjectId;
+  price: number;
+  quantity: number;
 }
 
 export interface IRequestUser extends Request {

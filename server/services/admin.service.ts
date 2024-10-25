@@ -235,7 +235,9 @@ export const adminAddProductService = asyncHandler(
       }));
     }
     console.log("detailImagesUrls", detailImagesUrls);
-    const { category_id } = req.params;
+
+    const { categoryId } = req.params;
+    console.log("category_id", categoryId);
     const { name, description, price, stock_quantity, brand } = req.body;
     const newProduct = new ProductModel({
       name,
@@ -248,7 +250,7 @@ export const adminAddProductService = asyncHandler(
         cloudinary_id: mainImageCloudinaryId,
       },
       product_Images: detailImagesUrls,
-      category_id,
+      category_id: categoryId,
     });
     const product = await newProduct.save();
     res.status(201).json({
