@@ -42,10 +42,9 @@ export const addToCartService = asyncHandler(
     console.log("body", req.body);
 
     // console.log(productId, quantity, price, req.params.cartId);
-    let cart = await CartModel.findOne({ _id: req.params.cartId })
-    console.log("Cart", cart);  
+    let cart = await CartModel.findOne({ _id: req.params.cartId });
+    console.log("Cart", cart);
     if (!cart) throw new Error("Cart not found");
-
 
     //Chuyển productId từ string sang ObjectId
     // kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
@@ -54,22 +53,66 @@ export const addToCartService = asyncHandler(
       (item) => item.productId == productId
     );
 
-    console.log("Item index", itemIndex);   
+    console.log("Item index", itemIndex);
 
     if (itemIndex > -1) {
       cart.items[itemIndex].quantity += quantity;
-      cart.items[itemIndex].price += price;    
+      cart.items[itemIndex].price += price;
     } else {
       cart.items.push({ productId, quantity, price });
     }
 
     const cartSave = await cart.save();
 
-    res.status(200).json({ message: "Add to cart successfully", cartPayload: cartSave });
+    res
+      .status(200)
+      .json({ message: "Add to cart successfully", cartPayload: cartSave });
   }
 );
 
+export const decreaseItemCartService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<ICartUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { cartId } = req.params;
+    const { productId, quantity, price } = req.body;
 
-export const reduceItemInCartService = asyncHandler(async (req: AuthenticatedRequestBody<ICartUser>, res: Response, next: NextFunction) => {
-    
-})
+    const cart = await CartModel.findById(cartId);
+    if (!cart) throw new Error("Cart not found");
+
+    const itemIndex = cart.items.findIndex(
+      (item) => item.productId == productId
+    );
+
+    if (itemIndex > -1) {
+      cart.items[itemIndex].quantity -= quantity;
+      cart.items[itemIndex].price -= price;
+      if (cart.items[itemIndex].quantity == 0) {
+        cart.items.splice(itemIndex, 1);
+      }
+    }
+    const cartSave = await cart.save();
+    res.status(200).json({
+      message: "Decrease item cart successfully",
+      cart: cartSave,
+    });
+  }
+);
+
+export const getCartService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<IUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.user?._id;
+    const cart = await CartModel.findOne({ userId});
+    if (!cart) throw new Error("Cart not found");
+    res.status(200).json({
+      message: "Get cart successfully",
+      cart,
+    })
+  }
+);

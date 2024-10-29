@@ -11,7 +11,7 @@ import { v2 as cloudinary } from "cloudinary";
 dotenv.config();
 
 const app: Application = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3000;
 const mongoURI = process.env.DB_URL;
 
 cloudinary.config({

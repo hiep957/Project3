@@ -28,13 +28,11 @@ export const getProductsService = asyncHandler(
     } = req.query;
 
     const query: any = {isActive: true};
-
+    let sortQuery = {};
     //search
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      query.$text = { $search: search as string};  
+      sortQuery = { score: { $meta: "textScore" } };
     }
     //price
     if (minPrice || maxPrice) {
@@ -51,7 +49,7 @@ export const getProductsService = asyncHandler(
     //   query.isActive = isActive === "true";
     // }
     //sort
-    let sortQuery = {};
+   
     if (sort) {
       const [field, order] = (sort as string).split(":");
       sortQuery = { [field]: order === "desc" ? -1 : 1 };
