@@ -14,11 +14,9 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
-
-type LoginForm = {
-  email: string;
-  password: string;
-};
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { LoginType } from "../../types";
+import { loginUser } from "../redux/authSlice";
 
 function Copyright(props: any) {
   return (
@@ -48,43 +46,22 @@ export default function LoginForm() {
     control,
     formState: { errors },
     watch,
-  } = useForm<LoginForm>();
+  } = useForm<LoginType>();
 
-  const [error, setError] = useState("");
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.auth);
 
-  //   const router = useRouter();
+  const onSubmit = (data: LoginType) => {
+    dispatch(loginUser(data));
+  };
 
-//   const onSubmit = async (data: LoginForm) => {
-//     try {
-//       const res = await fetch("/api/auth/login", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json", Credentials: "include" },
-//         body: JSON.stringify(data),
-//       });
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-//       if (res.ok) {
-//         toast.success("Đăng nhập thành công");
-//         window.open("/", "_self");
-//       } else {
-//         const error = await res.json();
-//         toast.error(error.message);
-//         setError(error.message);
-//       }
-//     } catch (err) {
-//       setError("Something went wrong");
-//     }
-//   };
-//   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-//     event.preventDefault();
-//     const data = new FormData(event.currentTarget);
-//     console.log({
-//       email: data.get("email"),
-//       password: data.get("password"),
-//     });
-//   };
-  // const toastTest = () => {
-  //   toast.success('Đăng nhập thành công');
-  // }
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     <ThemeProvider theme={defaultTheme}>
       {/* <button onClick={toastTest}>Click</button> */}
@@ -106,20 +83,10 @@ export default function LoginForm() {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit((data) => console.log(data))}
+            onSubmit={handleSubmit(onSubmit)}
             noValidate
             sx={{ mt: 1, width: "100%" }}
           >
-            {/* <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            /> */}
             <Grid>
               <Controller
                 name="email"
