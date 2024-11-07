@@ -7,7 +7,9 @@ import {
   adminUpdateCategoryService,
   adminUpdateProductService,
   adminUpdateUserService,
+  getCategoriesService,
 } from "../services/admin.service";
+import { get } from "mongoose";
 
 export const adminAddUserController = (
   req: Request,
@@ -20,6 +22,8 @@ export const adminUpdateUserController = (
   res: Response,
   next: NextFunction
 ) => adminUpdateUserService(req, res, next);
+
+export const getCategoriesController = (req: Request, res: Response, next: NextFunction) => getCategoriesService(req, res, next);
 
 export const adminAddCategoryController = (
   req: Request,

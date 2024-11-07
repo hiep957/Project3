@@ -11,6 +11,7 @@ import {
   adminUpdateCategoryController,
   adminUpdateProductController,
   adminUpdateUserController,
+  getCategoriesController,
 } from "../controllers/admin.controller";
 import dotenv from "dotenv";
 import { Admin } from "mongodb";
@@ -36,6 +37,9 @@ router.put(
   customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
   adminUpdateUserController
 );
+
+router.get("/categories", isAuth, getCategoriesController);
+
 router.post(
   "/categories/add",
   isAuth,

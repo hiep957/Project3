@@ -117,7 +117,7 @@ export const loginService = asyncHandler(
       { userId: user._id },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
-        expiresIn: "15m",
+        expiresIn: "1d",
         audience: String(user._id),
       }
     );
@@ -143,19 +143,21 @@ export const loginService = asyncHandler(
 
     res.cookie("accessToken", token.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
+      sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.cookie("refreshToken", token.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
       status: "Login successful",
-      data,
+      user: user,
     });
   }
 );

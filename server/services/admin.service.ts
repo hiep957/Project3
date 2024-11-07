@@ -121,14 +121,17 @@ export const adminUpdateUserService = asyncHandler(
   }
 );
 
-export const adminGetCategoryService = asyncHandler(
+export const getCategoriesService = asyncHandler(
   async (
     req: AuthenticatedRequestBody<ICategory>,
     res: Response,
     next: NextFunction
   ) => {
     const categories = await CategoryModel.find();
-    res.status(200).json({ categories });
+    if(!categories) {
+      throw new BadRequestError("Categories not found");
+    }
+    res.status(200).json({categories });
   }
 );
 
@@ -149,11 +152,11 @@ export const adminAddCategoryService = asyncHandler(
       name,
       subcategories,
     });
-    const categorySaved = await newCategory.save();
+    const categories = await newCategory.save();
 
     res.status(201).json({
       status: "Add category successful",
-      data: categorySaved,
+      categories
     });
   }
 );

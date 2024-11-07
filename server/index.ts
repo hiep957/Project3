@@ -44,14 +44,19 @@ app.get("/api", (req: Request, res: Response) => {
   res.send("Welcome to Express & TypeScript Servedsadasdsr");
 });
 
-const corsOptions = {
-  origin: "*", // Cho phép tất cả các nguồn
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Các phương thức HTTP được phép
-  allowedHeaders: ["Content-Type", "Authorization"], // Các header được phép
-  credentials: true, // Nếu cần gửi cookies
-};
-
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [process.env.FRONTEND_URL, "https://it4409nhom13.onrender.com", "http://localhost:5173", "http://localhost:5174"];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 //
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
