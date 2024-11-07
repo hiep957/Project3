@@ -10,9 +10,9 @@ export const Layout = ({ children }: Props) =>{
     return (
         <div className="">
             <Header></Header>
-            <div className="container mx-auto flex flex-row h-screen">
+            <div className="container mx-auto flex h-screen">
                 <Sidebar></Sidebar>
-                <div>{children}</div>
+                <div className="flex-1">{children}</div>
             </div>
             <div>footer</div>
         </div>

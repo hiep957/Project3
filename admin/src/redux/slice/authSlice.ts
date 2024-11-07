@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LoginType, User } from "../../types";
-import { signIn } from "./api";
+import { LoginType, User } from "../../../types";
+import { logout, signIn } from "../api";
 
 interface UserState {
   user: User | null;
@@ -22,6 +22,10 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
+  const response = await logout();
+  return response;
+});
 const authSlice = createSlice({
   name: "auth",
   initialState: initialState,
@@ -39,11 +43,23 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Login failed";
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Logout failed";
       });
   },
 });

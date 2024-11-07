@@ -16,7 +16,9 @@ import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { LoginType } from "../../types";
-import { loginUser } from "../redux/authSlice";
+import { loginUser } from "../redux/slice/authSlice";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function Copyright(props: any) {
   return (
@@ -49,19 +51,29 @@ export default function LoginForm() {
   } = useForm<LoginType>();
 
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
+  // const { loading, error } = useAppSelector((state) => state.auth);
 
-  const onSubmit = (data: LoginType) => {
-    dispatch(loginUser(data));
+  const onSubmit = async (data: LoginType) => {
+    const resultAction = await dispatch(loginUser(data));
+    console.log("resultAction: ", resultAction);
+    if (loginUser.fulfilled.match(resultAction)) {
+      console.log(loginUser.fulfilled.match(resultAction));
+      toast.success("Login successful");
+      navigate("/");
+    } else {
+      toast.error("Login failed");
+      console.log("Login failed: ", resultAction.error.message);
+    }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
   return (
     <ThemeProvider theme={defaultTheme}>
       {/* <button onClick={toastTest}>Click</button> */}
