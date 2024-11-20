@@ -13,8 +13,10 @@ import CategoryModel from "../models/Category.model";
 import { IProduct } from "../interfaces/Product";
 import { uploadImages } from "../routes/upload.route";
 import ProductModel from "../models/Product.model";
-import { uploadImage } from "./upload.service";
-import { v2 as cloudinary } from "cloudinary";
+import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import fs from 'fs';
+const UPLOAD_DIR = path.join(__dirname, '../public/uploads');
 export const adminAddUserService = asyncHandler(
   async (
     req: AuthenticatedRequestBody<IUser>,
@@ -128,10 +130,10 @@ export const getCategoriesService = asyncHandler(
     next: NextFunction
   ) => {
     const categories = await CategoryModel.find();
-    if(!categories) {
+    if (!categories) {
       throw new BadRequestError("Categories not found");
     }
-    res.status(200).json({categories });
+    res.status(200).json({ categories });
   }
 );
 
@@ -156,7 +158,7 @@ export const adminAddCategoryService = asyncHandler(
 
     res.status(201).json({
       status: "Add category successful",
-      categories
+      categories,
     });
   }
 );
@@ -215,45 +217,60 @@ export const adminAddProductService = asyncHandler(
     res: Response,
     next: NextFunction
   ) => {
+    const { name, description, price, stock_quantity, brand, sizes, category_id } = req.body;
+    const productExist = await ProductModel.findOne({ name: name });
+    if (productExist) {
+      throw new BadRequestError("Product already exists");
+    }
+
+    // Tạo thư mục uploads nếu chưa tồn tại
+    if (!fs.existsSync(UPLOAD_DIR)) {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    }
+
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
+
+    console.log("files", files);
+    // Xử lý ảnh chính
+    let mainImagePath = '';
     const mainImageFiles = files["mainImage"];
-    const imageFiles = files["images"];
-    let mainImageUrl: string | undefined;
-    let mainImageCloudinaryId: string | undefined;
-
     if (mainImageFiles && mainImageFiles.length > 0) {
-      const mainImageUpload = await uploadImage(mainImageFiles[0]);
-      mainImageUrl = mainImageUpload.url;
-      mainImageCloudinaryId = mainImageUpload.public_id; // Use public_id for cloudinary ID
+      const mainFile = mainImageFiles[0];
+      const filename = `${uuidv4()}${path.extname(mainFile.originalname)}`;
+      const filepath = path.join(UPLOAD_DIR, filename);
+      
+      await fs.promises.writeFile(filepath, mainFile.buffer);
+      mainImagePath = `/images/${filename}`;
     }
-    // Upload detail images
-    let detailImagesUrls: any[] = [];
-    if (imageFiles && imageFiles.length > 0) {
-      const detailImagesUpload = await Promise.all(imageFiles.map(uploadImage));
-      detailImagesUrls = detailImagesUpload.map((uploadResponse) => ({
-        url: uploadResponse.url,
-        cloudinary_id: uploadResponse.public_id,
-      }));
-    }
-    console.log("detailImagesUrls", detailImagesUrls);
 
-    const { categoryId } = req.params;
-    console.log("category_id", categoryId);
-    const { name, description, price, stock_quantity, brand } = req.body;
+    // Xử lý ảnh chi tiết
+    const detailImagePaths: string[] = [];
+    const imageFiles = files["images"];
+    if (imageFiles) {
+      for (const file of imageFiles) {
+        const filename = `${uuidv4()}${path.extname(file.originalname)}`;
+        const filepath = path.join(UPLOAD_DIR, filename);
+        
+        await fs.promises.writeFile(filepath, file.buffer);
+        detailImagePaths.push(`/images/${filename}`);
+      }
+    }
+
+    
+    console.log("category_id", category_id);
+
     const newProduct = new ProductModel({
       name,
       description,
       price,
       stock_quantity,
+      sizes,
       brand,
-      product_Image: {
-        url: mainImageUrl,
-        cloudinary_id: mainImageCloudinaryId,
-      },
-      product_Images: detailImagesUrls,
-      category_id: categoryId,
+      product_Image: mainImagePath,
+      product_Images: detailImagePaths,
+      category_id: category_id,
     });
     const product = await newProduct.save();
     res.status(201).json({
@@ -263,17 +280,26 @@ export const adminAddProductService = asyncHandler(
   }
 );
 
+
 export const adminUpdateProductService = asyncHandler(
   async (
     req: AuthenticatedRequestBody<IProduct>,
     res: Response,
     next: NextFunction
   ) => {
-    const { name, description, price, stock_quantity, brand, isUpdateImg, isActive } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      stock_quantity,
+      brand,
+      isUpdateImg,
+      isActive,
+      sizes,
+    } = req.body;
     const { productId } = req.params;
-    const product = await ProductModel.findById(productId);
 
+    const product = await ProductModel.findById(productId);
     if (!product) {
       throw new BadRequestError("Product not found");
     }
@@ -283,52 +309,63 @@ export const adminUpdateProductService = asyncHandler(
         [fieldname: string]: Express.Multer.File[];
       };
 
+      // Xử lý ảnh chính mới
       const mainImageFiles = files["mainImage"];
-      const imageFiles = files["images"];
-
-      // If new main image is provided, upload it and update the existing one
       if (mainImageFiles && mainImageFiles.length > 0) {
-        // Delete old image from Cloudinary if it exists
-        if (product.product_Image.cloudinary_id) {
-          await cloudinary.uploader.destroy(
-            product.product_Image.cloudinary_id
-          );
+        // Xóa ảnh cũ nếu có
+        if (product.product_Image) {
+          const oldPath = path.join(process.cwd(), 'public', product.product_Image);
+          if (fs.existsSync(oldPath)) {
+            fs.unlinkSync(oldPath);
+          }
         }
 
-        // Upload the new main image
-        const mainImageUpload = await uploadImage(mainImageFiles[0]);
-        product.product_Image.url = mainImageUpload.url;
-        product.product_Image.cloudinary_id = mainImageUpload.public_id;
+        // Lưu ảnh mới
+        const mainFile = mainImageFiles[0];
+        const filename = `${uuidv4()}${path.extname(mainFile.originalname)}`;
+        const filepath = path.join(UPLOAD_DIR, filename);
+        await fs.promises.writeFile(filepath, mainFile.buffer);
+        product.product_Image = `/uploads/${filename}`;
       }
 
-      // If new detail images are provided, handle their upload
+      // Xử lý ảnh chi tiết mới
+      const imageFiles = files["images"];
       if (imageFiles && imageFiles.length > 0) {
-        // Optionally: Remove old detail images from Cloudinary
-        for (const img of product.product_Images) {
-          await cloudinary.uploader.destroy(img.cloudinary_id);
+        // Xóa các ảnh chi tiết cũ
+        if (product.product_Images && product.product_Images.length > 0) {
+          for (const oldImage of product.product_Images) {
+            const oldPath = path.join(process.cwd(), 'public', oldImage);
+            if (fs.existsSync(oldPath)) {
+              fs.unlinkSync(oldPath);
+            }
+          }
         }
 
-        // Upload new detail images
-        const detailImagesUpload = await Promise.all(
-          imageFiles.map(uploadImage)
-        );
-        product.product_Images = detailImagesUpload.map((uploadResponse) => ({
-          url: uploadResponse.url,
-          cloudinary_id: uploadResponse.public_id,
-        }));
+        // Lưu các ảnh mới
+        const newDetailPaths = [];
+        for (const file of imageFiles) {
+          const filename = `${uuidv4()}${path.extname(file.originalname)}`;
+          const filepath = path.join(UPLOAD_DIR, filename);
+          await fs.promises.writeFile(filepath, file.buffer);
+          newDetailPaths.push(`/uploads/${filename}`);
+        }
+        product.product_Images = newDetailPaths;
       }
     }
 
+    // Cập nhật các trường khác
     if (name) product.name = name;
     if (description) product.description = description;
     if (price) product.price = price;
     if (stock_quantity) product.stock_quantity = stock_quantity;
     if (brand) product.brand = brand;
     if (isActive !== undefined) product.isActive = isActive;
+    if (sizes) product.sizes = sizes;
+
     const productUpdated = await product.save();
     res.status(200).json({
       status: "Update successful",
       data: productUpdated,
-    })
+    });
   }
 );

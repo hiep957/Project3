@@ -178,7 +178,7 @@ export const updateService = asyncHandler(
     next: NextFunction
   ) => {
     console.log("update service", req.params.userId);
-    const { name, surname, email } = req.body;
+    const { name, surname, email, address, phoneNumber, bio } = req.body;
     const updateFields: any = {};
 
     if (name !== undefined) {
@@ -189,6 +189,15 @@ export const updateService = asyncHandler(
     }
     if (email !== undefined) {
       updateFields.email = email;
+    }
+    if (address !== undefined) {
+      updateFields.address = address;
+    }
+    if (phoneNumber !== undefined) {
+      updateFields.phoneNumber = phoneNumber;
+    }
+    if (bio !== undefined) {
+      updateFields.bio = bio;
     }
     const updateUser = await UserModel.findByIdAndUpdate(
       req.params.userId,

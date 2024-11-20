@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 import { IProduct } from "../interfaces/Product";
 
 const ProductSchema: Schema<IProduct> = new Schema({
@@ -15,7 +15,6 @@ const ProductSchema: Schema<IProduct> = new Schema({
   },
   price: {
     type: Number,
-    required: true,
   },
   slug: {
     type: String,
@@ -23,29 +22,28 @@ const ProductSchema: Schema<IProduct> = new Schema({
   },
   stock_quantity: {
     type: Number,
-    required: true,
   },
+  sizes: [
+    {
+      size: {
+        type: String,
+      },
+      quantity: {
+        type: Number,
+      },
+    },
+  ],
   brand: {
     type: String,
     required: true,
   },
   product_Image: {
-    url: {
-      type: String,
-    },
-    cloudinary_id: {
-      type: String,
-    },
+    type: String
   },
-  product_Images: [
+  product_Images:[
     {
-      url: {
-        type: String,
-      },
-      cloudinary_id: {
-        type: String,
-      },
-    },
+      type: String
+    }
   ],
   user: {
     type: Schema.Types.ObjectId,
@@ -56,16 +54,16 @@ const ProductSchema: Schema<IProduct> = new Schema({
     default: true,
   },
   category_id: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: "Category",
   },
+
   subcategory_id: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: "Category.subcategories",
   },
 });
 
-ProductSchema.index({name: 'text', description: 'text'});
-
+ProductSchema.index({ name: "text", description: "text" });
 
 export default mongoose.model<IProduct>("Product", ProductSchema);

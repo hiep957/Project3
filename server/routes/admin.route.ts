@@ -66,7 +66,7 @@ router.get(
 );
 
 router.post(
-  "/categories/:categoryId/products/add",
+  "/products/add",
   isAuth,
   customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
   upload.fields([

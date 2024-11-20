@@ -8,6 +8,7 @@ import mongoose, { ConnectOptions } from "mongoose";
 import api from "./api/index";
 import cors from "cors";
 import { v2 as cloudinary } from "cloudinary";
+import path from "path";
 //For env File
 dotenv.config();
 
@@ -61,7 +62,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.use('/images', express.static(path.join(__dirname, '/public/uploads')));
 app.use("/api/v1", api);
 app.use(errorHandlingMiddleware);
 

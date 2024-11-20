@@ -7,7 +7,6 @@ const UserSchema: Schema<IUser> = new Schema(
     name: {
       type: String,
       trim: true,
-      lowercase: true,
       required: [true, "Please provide name"],
       minLength: [3, "Name can't be smaller than 3 characters"],
       maxLength: [15, "Name can't be greater than 15 characters"],
@@ -48,6 +47,27 @@ const UserSchema: Schema<IUser> = new Schema(
       trim: true,
       select: false,
     },
+    address: {
+      type: String,
+      default: "",
+      trim: true,
+
+      maxLength: [128, "Address can't be greater than 128 characters"],
+    },
+    phoneNumber: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+      maxLength: [15, "Phone number can't be greater than 15 characters"],
+    },
+    bio: {
+      type: String,
+      default: "No bio",
+      trim: true,
+
+      maxLength: [256, "Bio can't be greater than 256 characters"],
+    },
     role: {
       type: String,
       trim: true,
@@ -67,18 +87,21 @@ const UserSchema: Schema<IUser> = new Schema(
 );
 
 UserSchema.methods.createJWT = function () {
-    const payload = {
-      userId: this._id,
-      email: this.email,
-      name: this.firstName,
-      dateOfBirth: this.dateOfBirth,
-      gender: this.gender,
-      role: this.role,
-    };
-  
-    return jwt.sign(payload, process.env.TOKEN_SECRET as string, {
-      expiresIn: "15m",
-    });
+  const payload = {
+    userId: this._id,
+    email: this.email,
+    name: this.firstName,
+    dateOfBirth: this.dateOfBirth,
+    gender: this.gender,
+    address: this.address,
+    phoneNumber: this.phoneNumber,
+    bio: this.bio,
+    role: this.role,
   };
+
+  return jwt.sign(payload, process.env.TOKEN_SECRET as string, {
+    expiresIn: "15m",
+  });
+};
 
 export default mongoose.model<IUser>("User", UserSchema);
