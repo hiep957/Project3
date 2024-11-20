@@ -15,8 +15,9 @@ const links = [
   { label: "Order", path: "/order", icon: <FaFirstOrder /> },
 ];
 export const Sidebar = () => {
+
   return (
-    <div className="w-64  h-screen border-r-2">
+    <div className="w-64  h-screen border-r-2 bg-slate-100">
       <div className="flex justify-center border-b-black ">
         <div className="mt-2 p-4 font-bold text-lg">Side bar</div>
       </div>

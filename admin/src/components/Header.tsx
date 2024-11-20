@@ -4,8 +4,8 @@ import { useAppSelector } from "../redux/hooks";
 
 import AccountMenu from "./MUI/accountmenu";
 export const Header = () => {
-  const data: User | null = useAppSelector((state) => state.auth.user);
-  console.log("data header: ", data?.name);
+  const {user} = useAppSelector((state) => state.auth);
+  console.log("data header: ", user);
 
  
   return (

@@ -37,6 +37,40 @@ export const logout = async () => {
   }
 };
 
+export const getProfile = async () => {
+  const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
+  } else {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+}
+
+
+export const editProfile = async(updateData: Partial<User>, id: string) => {
+  const response = await fetch(`${API_URL}/api/v1/auth/update/${id}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updateData),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    toast.success("Profile updated successfully");
+    return data;
+  } else {
+    const error = await response.json();
+    toast.error(error.message);
+    throw new Error(error.message);
+  }
+}
+
 export const getCategory = async () => {
   const response = await fetch(`${API_URL}/api/v1/admin/categories`, {
     method: "GET",

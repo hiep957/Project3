@@ -10,7 +10,8 @@ import { Login } from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Category from "./pages/Category";
-import { Settings } from "./pages/Settings";
+import Settings from "./pages/Settings";
+import AddProduct from "./pages/AddProduct";
 const API_URL = import.meta.env.VITE_API_URL;
 function App() {
   const refreshAccessToken = async () => {
@@ -53,6 +54,15 @@ function App() {
               </Layout>
             }
           />
+
+          <Route
+            path="/product/add-product"
+            element={
+              <Layout>
+                <AddProduct></AddProduct>
+              </Layout>
+            }
+          ></Route>
           <Route
             path="/category"
             element={
