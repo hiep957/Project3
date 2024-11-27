@@ -1,10 +1,50 @@
-import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { get, useFormContext } from "react-hook-form";
 
-const ImageForm: React.FC = () => {
+interface ImageFormProps {
+  mainImage?: string | null; // URL của ảnh chính
+
+  productImages?: string[]; // Danh sách URL của ảnh phụ
+}
+const API_URL = import.meta.env.VITE_API_URL;
+const ImageForm: React.FC<ImageFormProps> = ({ mainImage, productImages }) => {
   const { setValue, getValues } = useFormContext();
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
-  const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
+  const [productImagePreviews, setProductImagePreviews] = useState<string[]>(
+    []
+  );
+
+  console.log("mainImage: ", getValues("mainImage"));
+
+  const formatImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return "";
+    // Nếu đã là full URL thì return luôn
+    if (imageUrl.startsWith("http")) return imageUrl;
+    // Nếu không, thêm base URL vào
+    return `${API_URL}${imageUrl}`;
+  };
+
+  // Thêm useEffect để set preview khi có sẵn ảnh
+  useEffect(() => {
+    setMainImagePreview(formatImageUrl(getValues("mainImage") as string));
+    console.log("mainImage: ", getValues("mainImage"));
+    setProductImagePreviews(
+      (getValues("images") as string[])?.map(formatImageUrl) || []
+    );
+    if (mainImage) {
+      const imageImage1 = getValues("mainImage");
+      setMainImagePreview(formatImageUrl(imageImage1 as string));
+      setValue("mainImage", mainImage); // Lưu path gốc vào form
+    }
+    if (productImages && productImages.length > 0) {
+      const formattedProductImages = productImages.map((img) =>
+        formatImageUrl(img)
+      );
+
+      setProductImagePreviews(formattedProductImages);
+      setValue("images", productImages); // Lưu array paths gốc vào form
+    }
+  }, []);
 
   // Handle main image upload
   const handleMainImageUpload = async (
@@ -14,7 +54,7 @@ const ImageForm: React.FC = () => {
     if (file) {
       const previewUrl = URL.createObjectURL(file);
       setMainImagePreview(previewUrl);
-      setValue("mainImage", file); // Save the main image to the form
+      setValue("mainImage", file);
       console.log("mainImage", file);
     }
   };
@@ -24,14 +64,19 @@ const ImageForm: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files;
-    console.log("files", files);
     if (files) {
-      setValue("images", files); // Save product images to the form
       const newPreviews = Array.from(files).map((file) =>
         URL.createObjectURL(file)
       );
-      setProductImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
-      console.log("images", files);
+      setProductImagePreviews((prevPreviews) => [
+        ...prevPreviews,
+        ...newPreviews,
+      ]);
+
+      // Lấy files hiện tại từ form
+      const currentFiles = getValues("images") || [];
+      const updatedFiles = [...currentFiles, ...Array.from(files)];
+      setValue("images", updatedFiles);
     }
   };
 
@@ -39,16 +84,24 @@ const ImageForm: React.FC = () => {
   const handleRemoveImage = (index: number) => {
     setProductImagePreviews((prevPreviews) => {
       const updatedPreviews = prevPreviews.filter((_, i) => i !== index);
-      
+
       // Update the form value
-      const currentFiles = (getValues("images") as FileList) || [];
-      const updatedFilesArray = Array.from(currentFiles).filter((_, i) => i !== index);
-      
-      // Convert array back to FileList
-      const updatedFiles = new DataTransfer();
-      updatedFilesArray.forEach(file => updatedFiles.items.add(file));
-  
-      setValue("images", updatedFiles.files);
+      const currentFiles = getValues("images") || [];
+      let updatedFiles;
+
+      // Kiểm tra nếu currentFiles là mảng URL strings hay FileList
+      if (Array.isArray(currentFiles)) {
+        updatedFiles = currentFiles.filter((_, i) => i !== index);
+      } else {
+        const filesArray = Array.from(currentFiles as FileList);
+        updatedFiles = filesArray.filter((_, i) => i !== index);
+        // Convert array back to FileList if needed
+        const dataTransfer = new DataTransfer();
+        updatedFiles.forEach((file) => dataTransfer.items.add(file));
+        updatedFiles = dataTransfer.files;
+      }
+
+      setValue("images", updatedFiles);
       return updatedPreviews;
     });
   };
@@ -56,7 +109,7 @@ const ImageForm: React.FC = () => {
   return (
     <div className="bg-slate-100 p-4 rounded">
       {/* Main image upload */}
-      <div className="mb-4 ">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Upload Main Image</h2>
         <div className="flex justify-center items-center mb-4">
           {mainImagePreview ? (
@@ -90,7 +143,10 @@ const ImageForm: React.FC = () => {
         <div className="flex flex-wrap gap-2 mb-4">
           {productImagePreviews.length > 0 ? (
             productImagePreviews.map((src, index) => (
-              <div key={index} className="relative w-20 h-20 border rounded-md overflow-hidden">
+              <div
+                key={index}
+                className="relative w-20 h-20 border rounded-md overflow-hidden"
+              >
                 <img
                   src={src}
                   alt={`Product Image Preview ${index}`}

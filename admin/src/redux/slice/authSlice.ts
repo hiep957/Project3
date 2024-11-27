@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { LoginType, User } from "../../../types";
 import { editProfile, getProfile, logout, signIn } from "../api";
 
+
 interface UserState {
   user: User | null;
   loading: boolean;

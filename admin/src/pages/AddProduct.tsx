@@ -9,6 +9,9 @@ import { toast } from "react-toastify";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useAppSelector } from "../redux/hooks";
 import CategoryForm from "../components/FormProduct/Category";
+
+
+
 const AddProduct = () => {
   const methods = useForm<ProductType>();
   const { categories } = useAppSelector((state) => state.category);
@@ -30,27 +33,29 @@ const AddProduct = () => {
         data.sizes[i].quantity.toString()
       );
     }
-    formData.append("category_id", data.category_id);
-    // if (data.mainImage) {
-    //   formData.append(`mainImage`, data.mainImage); // Append ảnh chính
-    // }
-    // console.log("mainImage", data.images.length);
-    // if (data.images) {
-    //   for (let i = 0; i < data.images.length; i++) {
-    //     formData.append(`images`, data.images[i]); // Append ảnh phụ
-    //   }
-    // }
+    formData.append("category", data.category);
+    formData.append("subcategory", data.subcategory);
+    if (data.mainImage) {
+      formData.append(`mainImage`, data.mainImage); // Append ảnh chính
+    }
+    console.log("mainImage", data.images.length);
+    if (data.images) {
+      for (let i = 0; i < data.images.length; i++) {
+        formData.append(`images`, data.images[i]); // Append ảnh phụ
+      }
+    }
 
     console.log("Form Data:", data);
 
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:3000/api/v1/admin/categories/670364ddc909fd321e2c966e/products/add",
+        "http://localhost:5000/api/v1/admin/products/add",
         {
           method: "POST",
           credentials: "include",
-          body: formData, // Gửi formData với các tệp
+          body: formData, // Gửi formData với các tệp,
+        
         }
       );
 

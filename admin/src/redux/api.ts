@@ -50,10 +50,9 @@ export const getProfile = async () => {
     const error = await response.json();
     throw new Error(error.message);
   }
-}
+};
 
-
-export const editProfile = async(updateData: Partial<User>, id: string) => {
+export const editProfile = async (updateData: Partial<User>, id: string) => {
   const response = await fetch(`${API_URL}/api/v1/auth/update/${id}`, {
     method: "PUT",
     credentials: "include",
@@ -69,7 +68,7 @@ export const editProfile = async(updateData: Partial<User>, id: string) => {
     toast.error(error.message);
     throw new Error(error.message);
   }
-}
+};
 
 export const getCategory = async () => {
   const response = await fetch(`${API_URL}/api/v1/admin/categories`, {
@@ -107,13 +106,15 @@ export const addCategory = async (
   }
 };
 
-
 export const deleteCategory = async (id: string) => {
-  const response = await fetch(`${API_URL}/api/v1/admin/categories/delete/${id}`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  });
+  const response = await fetch(
+    `${API_URL}/api/v1/admin/categories/delete/${id}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
   if (response.ok) {
     const data = await response.json();
     toast.success("Category deleted successfully");
@@ -123,4 +124,20 @@ export const deleteCategory = async (id: string) => {
     toast.error(error.message);
     throw new Error(error.message);
   }
-}
+};
+
+export const getProducts = async () => {
+  const response = await fetch(`${API_URL}/api/v1/product`, {
+    method: "GET",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
+  } else {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+};
+

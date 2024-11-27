@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slice/authSlice";
 import categoryReducer from "./slice/categorySlice";
+import productReducer from "./slice/productSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Sử dụng LocalStorage để lưu trữ
 
@@ -13,17 +14,23 @@ const categoryPersistConfig = {
   key: "category",
   storage,
 };
+const productPersistConfig = {
+  key: "product",
+  storage,
+}
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 const persistedCategoryReducer = persistReducer(
   categoryPersistConfig,
   categoryReducer
 );
+const persistedProductReducer = persistReducer(productPersistConfig, productReducer);
 
 // Cấu hình store với `persistedAuthReducer` cho `auth`
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
     category: persistedCategoryReducer,
+    product: persistedProductReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

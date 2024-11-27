@@ -22,6 +22,7 @@ export type LoginType = {
 
 
 export type ProductType = {
+  _id: string; // ID sản phẩm
   name: string; // Tên sản phẩm
   description: string; // Mô tả sản phẩm
   price: number; // Giá sản phẩm
@@ -36,4 +37,6 @@ export type ProductType = {
   images: FileList; // Các ảnh chi tiết sản phẩm (dạng mảng File)
   category_id: string; // ID danh mục sản phẩm
   subcategoryId: string; // ID danh mục con sản phẩm
+  category: string; // Tên danh mục sản phẩm
+  subcategory: string; // Tên danh mục con sản phẩm
 }

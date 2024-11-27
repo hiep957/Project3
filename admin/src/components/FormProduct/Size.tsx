@@ -47,7 +47,7 @@ const SizeForm = () => {
             />
             <button
               type="button"
-              className="p-2 bg-red-500 text-white rounded w-1/4"
+              className="p-2 bg-green-400 hover:bg-green-500 transition-all text-white rounded w-1/4"
               onClick={() => remove(index)}
             >
               Xóa
@@ -57,8 +57,9 @@ const SizeForm = () => {
       ))}
 
       <Button
+       
         variant="contained"
-        className="mt-2 p-2 bg-blue-500 text-white rounded w-1/4"
+        className="mt-2 p-2 bg-green-400 text-white rounded w-1/4"
         onClick={() => append({ size: "", quantity: 0 })}
       >
         Thêm size
