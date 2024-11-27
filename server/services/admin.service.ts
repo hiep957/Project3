@@ -217,7 +217,9 @@ export const adminAddProductService = asyncHandler(
     res: Response,
     next: NextFunction
   ) => {
-    const { name, description, price, stock_quantity, brand, sizes, category_id } = req.body;
+    const { name, description, price, stock_quantity, brand, sizes, category_id, category, subcategory } = req.body;
+    console.log("req.body", req.body);  
+    console.log("req.files", req.files);
     const productExist = await ProductModel.findOne({ name: name });
     if (productExist) {
       throw new BadRequestError("Product already exists");
@@ -231,8 +233,6 @@ export const adminAddProductService = asyncHandler(
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
-
-    console.log("files", files);
     // Xử lý ảnh chính
     let mainImagePath = '';
     const mainImageFiles = files["mainImage"];
@@ -270,7 +270,8 @@ export const adminAddProductService = asyncHandler(
       brand,
       product_Image: mainImagePath,
       product_Images: detailImagePaths,
-      category_id: category_id,
+      category: category,
+      subcategory: subcategory,
     });
     const product = await newProduct.save();
     res.status(201).json({
@@ -296,6 +297,8 @@ export const adminUpdateProductService = asyncHandler(
       isUpdateImg,
       isActive,
       sizes,
+      category,
+      subcategory
     } = req.body;
     const { productId } = req.params;
 
@@ -361,7 +364,8 @@ export const adminUpdateProductService = asyncHandler(
     if (brand) product.brand = brand;
     if (isActive !== undefined) product.isActive = isActive;
     if (sizes) product.sizes = sizes;
-
+    if (category) product.category = category;
+    if (subcategory) product.subcategory = subcategory;
     const productUpdated = await product.save();
     res.status(200).json({
       status: "Update successful",

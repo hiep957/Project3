@@ -48,7 +48,7 @@ app.get("/api", (req: Request, res: Response) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = [process.env.FRONTEND_URL, "https://it4409nhom13.onrender.com", "http://localhost:5173", "http://localhost:5174"];
+      const allowedOrigins = [ "http://localhost:5173", "http://localhost:5174", "http://localhost:3000"];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

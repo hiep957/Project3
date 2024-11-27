@@ -38,7 +38,7 @@ router.put(
   adminUpdateUserController
 );
 
-router.get("/categories", isAuth, getCategoriesController);
+router.get("/categories", getCategoriesController);
 
 router.post(
   "/categories/add",

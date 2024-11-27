@@ -2,12 +2,13 @@ import { Request, Response } from "express";
 import { IGetProductsRequest } from "../interfaces/CustomType";
 import ProductModel from "../models/Product.model";
 import asyncHandler from "../utils/asyncHandler";
+import { BadRequestError } from "../utils/ApiError";
 
 export const getProductService = asyncHandler(async (req, res, next) => {
-  if (!req.params.productId) throw new Error("Product ID is required");
+  if (!req.params.productId) throw new BadRequestError("Product ID is required");
 
   const product = await ProductModel.findById(req.params.productId);
-  if (!product) throw new Error("Product not found");
+  if (!product) throw new BadRequestError("Product not found");
 
   res.status(200).json({
     status: "success",
@@ -18,13 +19,15 @@ export const getProductService = asyncHandler(async (req, res, next) => {
 export const getProductsService = asyncHandler(
   async (req: Request, res: Response, next) => {
     const {
-      page = 1,
-      limit = 10,
+      page ,
+      limit,
       sort,
       search,
       minPrice,
       maxPrice,
       brand,
+      category,
+      subcategory,
     } = req.query;
 
     const query: any = {isActive: true};
@@ -43,6 +46,14 @@ export const getProductsService = asyncHandler(
     //brand
     if (brand) {
       query.brand = { $regex: brand, $options: "i" };
+    }
+
+    if(category) {
+      query.category = { $regex: category, $options: "i" };
+
+    }
+    if(subcategory) {
+      query.subcategory = { $regex: subcategory, $options: "i" };
     }
     // active
     // if (isActive !== undefined) {
@@ -64,7 +75,6 @@ export const getProductsService = asyncHandler(
       .sort(sortQuery)
       .skip(skip)
       .limit(Number(limit))
-      .populate("category_id")
       .populate("user", "name email");
 
     if (products.length === 0) throw new Error("No products found");
