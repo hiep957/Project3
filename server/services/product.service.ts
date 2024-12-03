@@ -75,7 +75,7 @@ export const getProductsService = asyncHandler(
       .sort(sortQuery)
       .skip(skip)
       .limit(Number(limit))
-      .populate("user", "name email");
+      // .populate("user", "name email");
 
     if (products.length === 0) throw new Error("No products found");
 

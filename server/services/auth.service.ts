@@ -237,12 +237,12 @@ export const logoutService = asyncHandler(
   }
 );
 
-export const refreshTokenService = asyncHandler(async (req, res, next) => {
-  const refreshToken = req.cookies.refreshToken;
-  let token = await TokenModel.findOne({ refreshToken });
+export const refreshTokenWithoutResponse = async (refreshToken: string) => {
+  const token = await TokenModel.findOne({ refreshToken });
   if (!token) {
     throw new BadRequestError("Not found refresh token");
   }
+
   const userId = await verifyRefreshToken(refreshToken);
   if (!userId) {
     throw new BadRequestError("Invalid token userID");
@@ -256,6 +256,7 @@ export const refreshTokenService = asyncHandler(async (req, res, next) => {
       audience: String(userId),
     }
   );
+
   const generatedRefreshToken = await token.generateToken(
     { userId: userId },
     process.env.REFRESH_TOKEN_SECRET as string,
@@ -270,29 +271,12 @@ export const refreshTokenService = asyncHandler(async (req, res, next) => {
 
   await token.save();
 
-  const data = {
-    user: userId,
+  return {
+    userId,
     accessToken: token.accessToken,
     refreshToken: token.refreshToken,
   };
-
-  res.cookie("accessToken", token.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie("refreshToken", token.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  return res.status(200).json({
-    status: "Refresh Token successful",
-    data,
-  });
-});
+};
 
 export const getAuthProfileService = asyncHandler(
   async (

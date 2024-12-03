@@ -9,6 +9,7 @@ export interface ICart {
         productId: mongoose.Schema.Types.ObjectId;
         price: number;
         quantity: number;   
+        size: string;
     }],
     
 

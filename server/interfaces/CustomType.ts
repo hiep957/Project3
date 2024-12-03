@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { IUser } from "./User";
+import mongoose from "mongoose";
 
 export interface IAuthRefreshTokenRequest extends Request {
   headers: { authorization?: string; Authorization?: string };
@@ -14,10 +15,13 @@ export interface AuthenticatedRequestBody<T> extends Request {
 }
 
 export interface ICartRequest extends Request {
-  productId: string;
+  productId: mongoose.Types.ObjectId;
   price: number;
   quantity: number;
+  size: string;
 }
+
+
 
 export interface IGetProductsRequest extends Request {
   limit: string;

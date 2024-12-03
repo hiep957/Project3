@@ -14,9 +14,6 @@ export interface IProduct extends Document {
   }[];
   product_Image: string
   product_Images: string[]
-  user: mongoose.Schema.Types.ObjectId;
-  category_id: mongoose.Schema.Types.ObjectId;
-  subcategory_id: mongoose.Schema.Types.ObjectId;
   category: string;
   subcategory: string;
   type: string;

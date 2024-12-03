@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAuthProfileController, loginController, logoutController, refreshTokenController, signupController, testController, updateController } from '../controllers/auth.controller';
+import { getAuthProfileController, loginController, logoutController, signupController, testController, updateController } from '../controllers/auth.controller';
 import { isAuth } from '../middlewares/auth/checkIsAuth';
 import { logoutService } from '../services/auth.service';
 import { get } from 'mongoose';
@@ -16,6 +16,6 @@ router.post('/login', loginController);
 router.get("/test", isAuth, testController);
 router.put('/update/:userId',isAuth, updateController);
 router.post('/logout',isAuth, logoutController);
-router.post('/refresh-token', refreshTokenController);
+// router.post('/refresh-token', refreshTokenController);
 router.get('/me',isAuth, getAuthProfileController);
 export default router;

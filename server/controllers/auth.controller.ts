@@ -3,7 +3,6 @@ import {
   getAuthProfileService,
   loginService,
   logoutService,
-  refreshTokenService,
   signupService,
   testService,
   updateService,
@@ -42,11 +41,11 @@ export const logoutController = (
   next: NextFunction
 ) => logoutService(req, res, next);
 
-export const refreshTokenController = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => refreshTokenService(req, res, next);
+// export const refreshTokenController = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => refreshTokenService(req, res, next);
 
 export const getAuthProfileController = (
   req: Request,

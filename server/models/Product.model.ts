@@ -52,10 +52,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
     subcategory: {
       type: String,
     },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
+    
     isActive: {
       type: Boolean,
       default: true,

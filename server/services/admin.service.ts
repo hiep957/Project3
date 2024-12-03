@@ -217,7 +217,7 @@ export const adminAddProductService = asyncHandler(
     res: Response,
     next: NextFunction
   ) => {
-    const { name, description, price, stock_quantity, brand, sizes, category_id, category, subcategory } = req.body;
+    const { name, description, price, stock_quantity, brand, sizes, category, subcategory } = req.body;
     console.log("req.body", req.body);  
     console.log("req.files", req.files);
     const productExist = await ProductModel.findOne({ name: name });
@@ -258,8 +258,6 @@ export const adminAddProductService = asyncHandler(
       }
     }
 
-    
-    console.log("category_id", category_id);
 
     const newProduct = new ProductModel({
       name,

@@ -22,6 +22,7 @@ export interface ICartUser extends IUser {
   productId: mongoose.Schema.Types.ObjectId;
   price: number;
   quantity: number;
+  size: string;
 }
 
 export interface IRequestUser extends Request {

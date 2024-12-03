@@ -23,6 +23,10 @@ const cartSchema: Schema<ICart> = new Schema(
           type: Number,
           default: 0,
         },
+        size: {
+          type: String,
+          default: "",
+        }
       },
     ],
   },
