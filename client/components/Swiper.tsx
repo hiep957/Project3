@@ -7,21 +7,21 @@ import { Navigation, Pagination } from "swiper/modules";
 
 const SwiperComponent = () => {
     return(
-        <div className="w-full h-auto">
+        <div className="w-full h-fit">
         <Swiper
           modules={[Navigation, Pagination]}
           spaceBetween={50}
           slidesPerView={1}
           navigation
           pagination={{ clickable: true }}
-          className="w-full h-[650px]"
+          className="w-full h-[600px]"
         >
           <SwiperSlide>
             <Image
               src="/banner-PC-3.png"
               alt="Slide 1"
               fill
-              objectFit="cover"
+              objectFit="contain"
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -29,7 +29,7 @@ const SwiperComponent = () => {
               src="/03.-BANNER-PC.png"
               alt="Slide 2"
               fill
-              objectFit="cover"
+              objectFit="contain"
             />
           </SwiperSlide>
           

@@ -4,11 +4,9 @@ import { useRouter } from "next/router";
 import Grid from "@mui/material/Grid2";
 import { FC, useEffect, useState } from "react";
 import { ProductType } from "@/utils/Type";
-import { CircularProgress, Pagination, PaginationItem } from "@mui/material";
-import Image from "next/image";
-import ProductCard from "@/components/ProductCart";
+import { CircularProgress, Container, Pagination, PaginationItem } from "@mui/material";
 
-const API_URL = process.env.SV_HOST || "http://localhost:5000";
+import ProductCard from "@/components/ProductCart";
 
 const CategoryPage: FC = () => {
   const router = useRouter();
@@ -18,7 +16,7 @@ const CategoryPage: FC = () => {
     total: 0,
     page: 1,
     pages: 0,
-    limit: 10,
+    limit: 12,
   });
   const [filters, setFilters] = useState<{
     subcategory: string | null;
@@ -59,11 +57,10 @@ const CategoryPage: FC = () => {
 
       console.log("response", response.data);
       setProducts(response.data.products || []);
-      
     } catch (error) {
       console.error("Lỗi khi lọc sản phẩm:", error);
       setProducts([]);
-      setPagination(prev => ({...prev, total: 0, pages: 0}));
+      setPagination((prev) => ({ ...prev, total: 0, pages: 0 }));
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +70,30 @@ const CategoryPage: FC = () => {
     if (router.query.slug) {
       fetchFilteredProducts();
     }
-  }, [filters, router.query.slug]);
+  }, [filters, router.query.slug, pagination.page]);
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    // Update page in both local state and URL query
+    setPagination((prev) => ({ ...prev, page: value }));
+
+    // Update URL query for page
+    const updateQuery = {
+      ...router.query,
+      page: value.toString(),
+    };
+
+    router.push(
+      {
+        pathname: router.pathname,
+        query: updateQuery,
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   const handleSubCategoryChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -84,6 +104,9 @@ const CategoryPage: FC = () => {
       ...filters,
       subcategory: isChecked ? value : null,
     });
+
+    // Reset to first page when filter changes
+    setPagination((prev) => ({ ...prev, page: 1 }));
 
     const updateQuery = { ...router.query };
 
@@ -110,6 +133,9 @@ const CategoryPage: FC = () => {
       ...filters,
       brand: isChecked ? value : null,
     });
+
+    // Reset to first page when filter changes
+    setPagination((prev) => ({ ...prev, page: 1 }));
 
     const updateQuery = { ...router.query };
 
@@ -139,6 +165,9 @@ const CategoryPage: FC = () => {
       maxPrice: checked ? maxPrice : null,
     });
 
+    // Reset to first page when filter changes
+    setPagination((prev) => ({ ...prev, page: 1 }));
+
     const updateQuery = { ...router.query };
 
     if (checked) {
@@ -161,7 +190,7 @@ const CategoryPage: FC = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-20">
+      <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
         <Grid container spacing={2}>
           <Grid size={2}>
             <div className="text-xl font-bold tracking-wide mb-4 mt-6">
@@ -246,11 +275,25 @@ const CategoryPage: FC = () => {
                 <p>Không tìm thấy sản phẩm</p>
               </div>
             ) : (
-              <ProductGrid products={products} />
+              <>
+                <ProductGrid products={products} />
+
+                <div className="flex justify-center mt-8">
+                  <Pagination
+                    count={pagination.pages}
+                    page={pagination.page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    showFirstButton
+                    showLastButton
+                    renderItem={(item) => <PaginationItem {...item} />}
+                  />
+                </div>
+              </>
             )}
           </Grid>
         </Grid>
-      </div>
+      </Container>
     </Layout>
   );
 };

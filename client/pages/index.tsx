@@ -1,8 +1,7 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+
 import { Layout } from "@/components/Layout";
 import SwiperComponent from "@/components/Swiper";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {  useAppSelector } from "@/redux/hooks";
 import { getCategories } from "@/redux/slice/categorySlice";
 import { wrapper } from "@/redux/store";
 

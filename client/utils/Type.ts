@@ -26,7 +26,14 @@ export type ProductType = {
   product_Images: string[];
   category: string; // Tên danh mục sản phẩm
   subcategory: string; // Tên danh mục con sản phẩm
+  selled_quantity: number; // Số lượng đã bán
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 };
+
+
+export type LoginType = {
+  email: string;
+  password: string;
+}

@@ -1,7 +1,8 @@
 import { useAppSelector } from "@/redux/hooks";
+import { Category } from "@/redux/slice/categorySlice";
 import { RootState } from "@/redux/store";
 import Link from "next/link";
-import { useSelector } from "react-redux";
+
 
 // const categories = [
 //   { name: "Nam", subcategories: ["Áo", "Quần", "Giày"] },
@@ -12,9 +13,10 @@ import { useSelector } from "react-redux";
 // ];
 
 const CategoryBar = () => {
-  const { categories } = useAppSelector((state: RootState) => state.category);
+  const categories: Category[]  = useAppSelector((state: RootState) => state.category.categories);
+  
   return (
-    <div className="flex flex-row space-x-10">
+    <div className="flex md:flex-row flex-col space-x-10">
       {categories.map((category, index) => (
         <div key={index} className="relative group">
           {/* Category Name */}
@@ -44,15 +46,6 @@ const CategoryBar = () => {
   );
 };
 
-// export async function getServerSideProps()  {
-//     const res = await fetch("http://localhost:5000/api/v1/admin/categories");
-//     const categories = await res.json();
-//     console.log(categories);
-//     return {
-//         props: {
-//             categories,
-//         },
-//     };
-// }
+
 
 export default CategoryBar;
