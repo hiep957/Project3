@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { replace, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Container, Button, Typography, CircularProgress } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
@@ -7,13 +7,14 @@ import { toast } from "react-toastify";
 import SizeForm from "../components/FormProduct/Size";
 import ImageForm from "../components/FormProduct/Image";
 import CategoryForm from "../components/FormProduct/Category";
-
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const EditProduct = () => {
   const { productId } = useParams();
   const methods = useForm<ProductType>();
   const { setValue } = methods;
+  const navigate = useNavigate();
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [product, setProduct] = useState<ProductType | null>(null);
@@ -40,18 +41,16 @@ const EditProduct = () => {
         }
 
         const data = await response.json();
-       
 
         methods.reset(data.data); // Populate form with fetched product data
         console.log("methods: ", methods.getValues("name"));
         console.log("data: ", data.data);
-        
+
         setValue("mainImage", data.data.product_Image || "");
         setValue("images", data.data.product_Images || []);
         setValue("category", data.data.category || "");
         setValue("subcategory", data.data.subcategory || "");
         setProduct(data.data);
-        console.log("product: ", product);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -60,7 +59,7 @@ const EditProduct = () => {
     };
 
     fetchProduct();
-  }, [productId, methods]);
+  }, [productId, setValue, methods]);
 
   const onSubmit = async (data: ProductType) => {
     const formData = new FormData();
@@ -79,13 +78,16 @@ const EditProduct = () => {
 
     if (data.mainImage instanceof File) {
       formData.append("mainImage", data.mainImage);
+      formData.append("isUpdateImg", "true");
     }
-
-    Array.from(data.images || []).forEach((image) => {
-      if (image instanceof File) {
-        formData.append("images", image);
-      }
-    });
+    if(data.images) { 
+      console.log("data.images: ", data.images);
+      formData.append("isUpdateImg", "true");
+      Array.from(data.images).forEach((file) => {
+        formData.append("images", file);
+      });
+    }
+    console.log("formData: ", formData);
 
     try {
       setLoading(true);
@@ -102,7 +104,11 @@ const EditProduct = () => {
       if (!response.ok) {
         toast.error(responseData.message || "Failed to update product");
       } else {
+        const productId = responseData.data._id;
         toast.success("Product updated successfully");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000); // Delay 2 giây để người dùng có thể đọc thông báo
       }
     } catch (err) {
       toast.error("Error updating product");
@@ -110,6 +116,8 @@ const EditProduct = () => {
       setLoading(false);
     }
   };
+
+  console.log("product: ", product);
 
   if (loading) return <CircularProgress />;
   if (error) return <div>Error: {error}</div>;
@@ -165,12 +173,8 @@ const EditProduct = () => {
               <div className="w-5/12  rounded-lg h-fit ">
                 {/* Image Form */}
                 <ImageForm
-                  mainImage={
-                    typeof product?.mainImage === "string"
-                      ? product.mainImage
-                      : null
-                  }
-                  //   productImages={product?.images?.filter((img): img is string => typeof img === 'string')}
+                  mainImage={product?.product_Image || null}
+                  productImages={product?.product_Images || []}
                 />
                 <div className="bg-slate-100 rounded-lg p-4 mt-4">
                   <CategoryForm />

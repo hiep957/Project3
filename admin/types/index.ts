@@ -39,4 +39,6 @@ export type ProductType = {
   subcategoryId: string; // ID danh mục con sản phẩm
   category: string; // Tên danh mục sản phẩm
   subcategory: string; // Tên danh mục con sản phẩm
+  product_Image?: string;
+  product_Images?: string[];
 }

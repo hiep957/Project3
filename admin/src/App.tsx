@@ -15,32 +15,32 @@ import EditProduct from "./pages/EditProduct";
 import { Product } from "./pages/Product";
 const API_URL = import.meta.env.VITE_API_URL;
 function App() {
-  const refreshAccessToken = async () => {
-    const response = await fetch(`${API_URL}/api/v1/auth/refresh-token`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Refresh Token Success", data);
-      return data;
-    } else {
-      const error = await response.json();
-      throw new Error(error.message);
-    }
-  };
+  // const refreshAccessToken = async () => {
+  //   const response = await fetch(`${API_URL}/api/v1/auth/refresh-token`, {
+  //     method: "POST",
+  //     credentials: "include",
+  //     headers: { "Content-Type": "application/json" },
+  //   });
+  //   if (response.ok) {
+  //     const data = await response.json();
+  //     console.log("Refresh Token Success", data);
+  //     return data;
+  //   } else {
+  //     const error = await response.json();
+  //     throw new Error(error.message);
+  //   }
+  // };
 
-  useEffect(() => {
-    refreshAccessToken();
-    const intervalId = setInterval(
-      () => {
-        refreshAccessToken();
-      },
-      15 * 60 * 1000
-    );
-    return () => clearInterval(intervalId);
-  }, []);
+  // useEffect(() => {
+  //   refreshAccessToken();
+  //   const intervalId = setInterval(
+  //     () => {
+  //       refreshAccessToken();
+  //     },
+  //     15 * 60 * 1000
+  //   );
+  //   return () => clearInterval(intervalId);
+  // }, []);
   const [count, setCount] = useState(0);
 
   return (
