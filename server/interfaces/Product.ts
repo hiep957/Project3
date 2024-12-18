@@ -12,6 +12,7 @@ export interface IProduct extends Document {
     size: string;
     quantity: number;
   }[];
+  selled_quantity: number;
   product_Image: string
   product_Images: string[]
   category: string;

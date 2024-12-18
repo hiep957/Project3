@@ -1,11 +1,17 @@
-import { Request, Response } from "express";
-import { IGetProductsRequest } from "../interfaces/CustomType";
+import { NextFunction, Request, Response } from "express";
+import {
+  AuthenticatedRequestBody,
+  IGetProductsRequest,
+} from "../interfaces/CustomType";
 import ProductModel from "../models/Product.model";
 import asyncHandler from "../utils/asyncHandler";
 import { BadRequestError } from "../utils/ApiError";
+import { IProduct } from "../interfaces/Product";
+import OrderModel from "../models/Order.model";
 
 export const getProductService = asyncHandler(async (req, res, next) => {
-  if (!req.params.productId) throw new BadRequestError("Product ID is required");
+  if (!req.params.productId)
+    throw new BadRequestError("Product ID is required");
 
   const product = await ProductModel.findById(req.params.productId);
   if (!product) throw new BadRequestError("Product not found");
@@ -19,7 +25,7 @@ export const getProductService = asyncHandler(async (req, res, next) => {
 export const getProductsService = asyncHandler(
   async (req: Request, res: Response, next) => {
     const {
-      page ,
+      page,
       limit,
       sort,
       search,
@@ -30,11 +36,11 @@ export const getProductsService = asyncHandler(
       subcategory,
     } = req.query;
 
-    const query: any = {isActive: true};
+    const query: any = { isActive: true };
     let sortQuery = {};
     //search
     if (search) {
-      query.$text = { $search: search as string};  
+      query.$text = { $search: search as string };
       sortQuery = { score: { $meta: "textScore" } };
     }
     //price
@@ -48,11 +54,10 @@ export const getProductsService = asyncHandler(
       query.brand = { $regex: brand, $options: "i" };
     }
 
-    if(category) {
+    if (category) {
       query.category = { $regex: category, $options: "i" };
-
     }
-    if(subcategory) {
+    if (subcategory) {
       query.subcategory = { $regex: subcategory, $options: "i" };
     }
     // active
@@ -60,7 +65,7 @@ export const getProductsService = asyncHandler(
     //   query.isActive = isActive === "true";
     // }
     //sort
-   
+
     if (sort) {
       const [field, order] = (sort as string).split(":");
       sortQuery = { [field]: order === "desc" ? -1 : 1 };
@@ -74,8 +79,8 @@ export const getProductsService = asyncHandler(
     const products = await ProductModel.find(query)
       .sort(sortQuery)
       .skip(skip)
-      .limit(Number(limit))
-      // .populate("user", "name email");
+      .limit(Number(limit));
+    // .populate("user", "name email");
 
     if (products.length === 0) throw new Error("No products found");
 
@@ -92,6 +97,44 @@ export const getProductsService = asyncHandler(
           limit: Number(limit),
         },
       },
+    });
+  }
+);
+
+export const ChangeProductQuantityAfterPayment = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<IProduct>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { orderCode } = req.params;
+    const order = await OrderModel.findOne({ orderCode });
+    if (!order) throw new BadRequestError("Order not found");
+    console.log("Order", order);
+    const productSave = [];
+    for (let i = 0; i < order.items.length; i++) {
+      const productId = order.items[i].productId;
+      const quantity = order.items[i].quantity;
+      const size = order.items[i].size;
+      const product = await ProductModel.findById(productId);
+      if (!product) throw new BadRequestError("Product not found");
+      console.log("Product", product);
+      if (size) {
+        const sizeIndex = product.sizes.findIndex(
+          (s) => s.size === size && s.quantity >= quantity
+        );
+        if (sizeIndex === -1) {
+          throw new BadRequestError("Size not found");
+        }
+        product.sizes[sizeIndex].quantity -= quantity;
+        product.selled_quantity += quantity;
+      }
+      productSave.push(await product.save());
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: { productSave },
     });
   }
 );

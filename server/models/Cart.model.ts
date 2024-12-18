@@ -27,6 +27,7 @@ const cartSchema: Schema<ICart> = new Schema(
           type: String,
           default: "",
         }
+        
       },
     ],
   },

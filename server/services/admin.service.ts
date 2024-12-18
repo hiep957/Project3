@@ -218,8 +218,8 @@ export const adminAddProductService = asyncHandler(
     next: NextFunction
   ) => {
     const { name, description, price, stock_quantity, brand, sizes, category, subcategory } = req.body;
-    console.log("req.body", req.body);  
-    console.log("req.files", req.files);
+    console.log("req.body 21", req.body);  
+    console.log("req.files 213", req.files);
     const productExist = await ProductModel.findOne({ name: name });
     if (productExist) {
       throw new BadRequestError("Product already exists");
@@ -299,13 +299,15 @@ export const adminUpdateProductService = asyncHandler(
       subcategory
     } = req.body;
     const { productId } = req.params;
-
+    console.log("req.body update", req.body);
+    console.log("req.files update", req.files);
     const product = await ProductModel.findById(productId);
     if (!product) {
       throw new BadRequestError("Product not found");
     }
 
     if (isUpdateImg) {
+      console.log("có ảnh update")
       const files = req.files as {
         [fieldname: string]: Express.Multer.File[];
       };
@@ -326,7 +328,7 @@ export const adminUpdateProductService = asyncHandler(
         const filename = `${uuidv4()}${path.extname(mainFile.originalname)}`;
         const filepath = path.join(UPLOAD_DIR, filename);
         await fs.promises.writeFile(filepath, mainFile.buffer);
-        product.product_Image = `/uploads/${filename}`;
+        product.product_Image = `/images/${filename}`;
       }
 
       // Xử lý ảnh chi tiết mới
@@ -348,7 +350,7 @@ export const adminUpdateProductService = asyncHandler(
           const filename = `${uuidv4()}${path.extname(file.originalname)}`;
           const filepath = path.join(UPLOAD_DIR, filename);
           await fs.promises.writeFile(filepath, file.buffer);
-          newDetailPaths.push(`/uploads/${filename}`);
+          newDetailPaths.push(`/images/${filename}`);
         }
         product.product_Images = newDetailPaths;
       }

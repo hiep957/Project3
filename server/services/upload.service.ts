@@ -41,3 +41,5 @@ export async function uploadImage(image: Express.Multer.File): Promise<UploadApi
   const response = await cloudinary.uploader.upload(dataURI);
   return response;
 }
+
+

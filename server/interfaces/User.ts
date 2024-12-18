@@ -23,10 +23,16 @@ export interface ICartUser extends IUser {
   price: number;
   quantity: number;
   size: string;
+  orderCode?: number;
 }
 
 export interface IRequestUser extends Request {
   user: IUser;
+}
+
+export interface IPaymentRequest extends IUser {
+  page: number;
+  limit: number;
 }
 
 export interface IAuthRequest extends Request {

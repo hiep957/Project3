@@ -9,6 +9,7 @@ import CartModel from "../models/Cart.model";
 import { ICart } from "../interfaces/Cart";
 import mongoose, { Types } from "mongoose";
 import ProductModel from "../models/Product.model";
+import OrderModel from "../models/Order.model";
 
 export const createCartService = asyncHandler(
   async (
@@ -183,5 +184,45 @@ export const getCartService = asyncHandler(
       message: "Get cart successfully",
       cart,
     });
+  }
+);
+
+export const removeCartItemAfterPaymentService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<ICartUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { orderCode } = req.params;
+    console.log("Order code", orderCode);
+
+    const order = await OrderModel.findOne({ orderCode });
+    if (!order) throw new Error("Order not found");
+    console.log("Order", order);
+    const cart = await CartModel.findOne({ userId: req.user?._id });
+    if (!cart) throw new Error("Cart not found");
+
+    const orderProductIds = order.items.map((item) =>
+      item.productId.toString()
+    );
+    const updatedCartItems = cart.items.filter(
+      (cartItem) =>
+        !orderProductIds.includes(cartItem.productId.toString()) ||
+        !order.items.some(
+          (orderItem) =>
+            orderItem.productId.toString() === cartItem.productId.toString() &&
+            orderItem.size === cartItem.size
+        )
+    );
+
+    // Cập nhật giỏ hàng
+    cart.items = updatedCartItems;
+    await cart.save();
+
+    console.log("Cart before", cart);
+
+    res
+      .status(200)
+      .json({ message: "Remove cart item after payment successfully" });
   }
 );

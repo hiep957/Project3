@@ -14,9 +14,9 @@ const OrderSchema: Schema<IOrder> = new Schema(
     items: [
       {
         productId: {
-          type: Schema.Types.ObjectId,
+          type: String,
           required: true,
-          ref: "Product",
+          
         },
         name: {
           type: String,
@@ -44,7 +44,7 @@ const OrderSchema: Schema<IOrder> = new Schema(
       type: String,
       default: "",
     },
-    shippingAddress: {
+    buyerAddress: {
       type: String,
       default: "",
     },

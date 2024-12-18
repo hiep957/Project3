@@ -1,7 +1,7 @@
 import { mongo, Schema } from "mongoose";
 
 export interface OrderItem {
-  productId: Schema.Types.ObjectId;
+  productId: string;
   name: string;
   price: number;
   quantity: number;
@@ -20,7 +20,7 @@ export interface IOrder {
     | "shipped"
     | "delivered"
     | "expired"; // Trạng thái đơn hàng
-  shippingAddress?: string;
+  buyerAddress?: string;
   buyerName?: string; // Tên người mua
   buyerEmail?: string; // Email người mua
   buyerPhone?: string; // Số điện thoại người mua
@@ -31,4 +31,8 @@ export interface IOrder {
 export interface IOrderRequest {
   items: OrderItem[];
   totalAmount: number;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  buyerAddress: string;
 }

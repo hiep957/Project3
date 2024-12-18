@@ -21,6 +21,10 @@ const ProductSchema: Schema<IProduct> = new Schema(
       type: String,
       unique: true,
     },
+    selled_quantity: {
+      type: Number,
+      default: 0,
+    },
     stock_quantity: {
       type: Number,
     },
