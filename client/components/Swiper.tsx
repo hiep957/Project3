@@ -14,7 +14,7 @@ const SwiperComponent = () => {
           slidesPerView={1}
           navigation
           pagination={{ clickable: true }}
-          className="w-full h-[600px]"
+          className="w-full lg:h-[600px] h-[250px]"
         >
           <SwiperSlide>
             <Image

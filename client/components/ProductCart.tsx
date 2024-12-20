@@ -16,12 +16,24 @@ const ProductCard: FC<{ product: ProductType }> = ({ product }) => (
         loading="lazy"
         className="object-cover h-[300px]"
       />
-      <div className="p-2">
-        <div className="font-medium tracking-wider">{product.name}</div>
-        <div className="text-gray-600 font-bold">
-          <span className="text-red-500">{product.price} VNĐ </span> 
+      <div className="p-2 h-[150px] flex flex-col justify-between">
+        {/* Tên sản phẩm */}
+        <div className="font-medium tracking-wider line-clamp-2 flex-1">
+          {product.name}
         </div>
-        <div className="text-sm text-gray-500 mt-1">{product.description}</div>
+
+        {/* Giá và số lượng đã bán */}
+        <div className="flex justify-between text-sm text-gray-600 font-bold  flex-1">
+          <span className="text-red-500 mt-2">{product.price} VNĐ</span>
+          <span className="text-gray-500 mt-2">
+            Đã bán: {product.selled_quantity}
+          </span>
+        </div>
+
+        {/* Mô tả sản phẩm */}
+        <div className="text-sm text-gray-500 mt-1 line-clamp-2 flex-1">
+          {product.description}
+        </div>
       </div>
     </div>
   </Link>

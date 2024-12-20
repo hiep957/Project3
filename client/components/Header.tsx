@@ -15,7 +15,7 @@ const Header = () => {
   console.log("isAuth", isAuth);
 
   return (
-    <div className=" flex flex-col ">
+    <div className="flex flex-col ">
       <div className="bg-black h-10 flex  justify-center items-center">
         <p className="text-white">
           Mien phi van chuyen voi hoa don{" "}
@@ -24,7 +24,7 @@ const Header = () => {
       </div>
 
       <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
-        <div className=" py-10 flex  flex-col md:flex-row w-full ">
+        <div className="p-4 flex flex-col md:flex-row w-full  ">
           <div className="flex w-1/2 items-center font-bold tracking-wide">
             Hệ thống cửa hàng
           </div>
@@ -59,7 +59,7 @@ const Header = () => {
       </Container>
 
       {/* Category*/}
-      <div className="container mx-auto px-20 flex justify-center">
+      <div className=" flex justify-center">
         <CategoryBar />
       </div>
     </div>

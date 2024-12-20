@@ -140,3 +140,18 @@ export const getCart = async () => {
     throw new Error(error.message);
   }
 };
+
+
+export const getTopFiveProductSell = async () => {
+  const response = await fetch(`${API_URL}/api/v1/product/top-five-product-sell`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
+  } else {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+}
