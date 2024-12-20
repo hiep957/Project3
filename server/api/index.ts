@@ -11,6 +11,7 @@ import productRoutes from '../routes/product.route';
 import cartRoutes from '../routes/cart.route';
 import paymentRoutes from '../routes/payment.route';
 import vitonRoutes from '../routes/viton.route';
+import reviewRoutes from '../routes/review.route';
 const router = express.Router();
 
 router.use('/auth', authRoutes);
@@ -20,6 +21,7 @@ router.use('/product', productRoutes);
 router.use('/cart', cartRoutes);
 router.use('/payment', paymentRoutes);
 router.use('/viton', vitonRoutes)
+router.use('/review', reviewRoutes);
 // router.use('/webhook', webhookRoutes)
 export default router;
 

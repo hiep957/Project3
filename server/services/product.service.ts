@@ -60,20 +60,13 @@ export const getProductsService = asyncHandler(
     if (subcategory) {
       query.subcategory = { $regex: subcategory, $options: "i" };
     }
-    // active
-    // if (isActive !== undefined) {
-    //   query.isActive = isActive === "true";
-    // }
-    //sort
 
     if (sort) {
       const [field, order] = (sort as string).split(":");
       sortQuery = { [field]: order === "desc" ? -1 : 1 };
     } else {
-      // Default sort by newest
       sortQuery = { createdAt: -1 };
     }
-    //skip and limit
     const skip = (Number(page) - 1) * Number(limit);
 
     const products = await ProductModel.find(query)
@@ -138,3 +131,14 @@ export const ChangeProductQuantityAfterPayment = asyncHandler(
     });
   }
 );
+
+export const getTopFiveProductSell = asyncHandler(async (req:Request, res:Response, next:NextFunction) => {
+  const products = await ProductModel.find()
+    .sort({ selled_quantity: -1 })
+    .limit(4);
+  if (products.length === 0) throw new BadRequestError("No products found");
+  res.status(200).json({
+    status: "success",
+    data: products,
+  });
+});
