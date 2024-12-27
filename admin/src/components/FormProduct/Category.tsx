@@ -34,7 +34,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   );
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4 bg-white">
       <label htmlFor="category">Chọn danh mục</label>
       <select
         id="category"

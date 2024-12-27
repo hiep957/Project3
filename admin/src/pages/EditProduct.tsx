@@ -8,12 +8,39 @@ import SizeForm from "../components/FormProduct/Size";
 import ImageForm from "../components/FormProduct/Image";
 import CategoryForm from "../components/FormProduct/Category";
 import { useNavigate } from "react-router-dom";
+import { set } from "date-fns";
+import ReactQuill from "react-quill";
 const API_URL = import.meta.env.VITE_API_URL;
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, 3, 4, 5, 6, false] }],
+    [{ font: [] }],
+    [{ size: ["small", false, "large", "huge"] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ color: [] }, { background: [] }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link", "image", "video"],
+    ["clean"],
+  ],
+};
+
+const formats = [
+  "header", "font", "size", "bold", "italic", "underline", "strike",
+  "color", "background", "list", "bullet", "align",
+  "link", "image", "video",
+];
 
 const EditProduct = () => {
   const { productId } = useParams();
-  const methods = useForm<ProductType>();
-  const { setValue } = methods;
+  const methods = useForm<ProductType>({
+    defaultValues:{
+      textEditor: "",
+    }
+  });
+  const { setValue,watch } = methods;
+  const textEditor = watch("textEditor");
   const navigate = useNavigate();
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -50,6 +77,7 @@ const EditProduct = () => {
         setValue("images", data.data.product_Images || []);
         setValue("category", data.data.category || "");
         setValue("subcategory", data.data.subcategory || "");
+        setValue("textEditor", data.data.textEditor || "");
         setProduct(data.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -60,6 +88,12 @@ const EditProduct = () => {
 
     fetchProduct();
   }, [productId, setValue, methods]);
+  const handleEditorChange = (newContent: string) => {
+    setValue("textEditor", newContent, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   const onSubmit = async (data: ProductType) => {
     const formData = new FormData();
@@ -75,6 +109,7 @@ const EditProduct = () => {
 
     formData.append("category", data.category);
     formData.append("subcategory", data.subcategory);
+    formData.append("textEditor", data.textEditor);
 
     if (data.mainImage instanceof File) {
       formData.append("mainImage", data.mainImage);
@@ -133,7 +168,7 @@ const EditProduct = () => {
             <div className="flex w-full space-x-3">
               {/* Left section */}
               <div className="w-7/12">
-                <div className="bg-slate-100 p-4 rounded-lg space-y-4">
+                <div className="bg-white p-4 rounded-lg space-y-4">
                   <div>
                     <label>Name</label>
                     <input
@@ -159,7 +194,7 @@ const EditProduct = () => {
                   <SizeForm />
                 </div>
 
-                <div className="bg-slate-100 p-4 rounded-lg mt-4">
+                <div className="bg-white p-4 rounded-lg mt-4">
                   <label>Price</label>
                   <input
                     type="number"
@@ -167,6 +202,33 @@ const EditProduct = () => {
                     {...methods.register("price")}
                   />
                 </div>
+                <div className="bg-white p-4 rounded-lg mt-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="font-semibold">Content</label>
+                  <div className="min-h-[400px] bg-white rounded-lg">
+                    <ReactQuill
+                      theme="snow"
+                      value={textEditor}
+                      onChange={handleEditorChange}
+                      modules={modules}
+                      formats={formats}
+                      className="h-96 [&>.ql-container]:font-normal
+                  [&>.ql-toolbar]:bg-gray-50 
+                  [&>.ql-toolbar]:border-0 
+                  [&>.ql-toolbar]:border-b 
+                  [&>.ql-toolbar]:border-gray-200
+                  [&>.ql-container]:border-0
+                  [&>.ql-container]:rounded-b-lg"
+                    />
+                  </div>
+                  {methods.formState.errors.textEditor && (
+                    <span className="text-red-500 text-sm">
+                      {typeof methods.formState.errors.textEditor?.message ===
+                        "string" && methods.formState.errors.textEditor.message}
+                    </span>
+                  )}
+                </div>
+              </div>
               </div>
 
               {/* Right section */}
@@ -176,7 +238,7 @@ const EditProduct = () => {
                   mainImage={product?.product_Image || null}
                   productImages={product?.product_Images || []}
                 />
-                <div className="bg-slate-100 rounded-lg p-4 mt-4">
+                <div className="bg-white rounded-lg p-4 mt-4">
                   <CategoryForm />
                 </div>
               </div>

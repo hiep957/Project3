@@ -13,40 +13,34 @@ import Settings from "./pages/Settings";
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
 import { Product } from "./pages/Product";
+import Users from "./pages/Users";
+import MyOrder from "./pages/Orders";
 const API_URL = import.meta.env.VITE_API_URL;
 function App() {
-  // const refreshAccessToken = async () => {
-  //   const response = await fetch(`${API_URL}/api/v1/auth/refresh-token`, {
-  //     method: "POST",
-  //     credentials: "include",
-  //     headers: { "Content-Type": "application/json" },
-  //   });
-  //   if (response.ok) {
-  //     const data = await response.json();
-  //     console.log("Refresh Token Success", data);
-  //     return data;
-  //   } else {
-  //     const error = await response.json();
-  //     throw new Error(error.message);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   refreshAccessToken();
-  //   const intervalId = setInterval(
-  //     () => {
-  //       refreshAccessToken();
-  //     },
-  //     15 * 60 * 1000
-  //   );
-  //   return () => clearInterval(intervalId);
-  // }, []);
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <Router>
         <Routes>
+          <Route>
+
+            <Route
+              path="/order"
+              element={
+                <Layout>
+                  <MyOrder></MyOrder>
+                </Layout>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <Layout>
+                  <Users></Users>
+                </Layout>
+              }
+            />
+          </Route>
+
           <Route
             path="/settings"
             element={
@@ -98,13 +92,9 @@ function App() {
                 <Product></Product>
               </Layout>
             }
-          >
-            
-          </Route>
+          ></Route>
 
-          <Route>
-
-          </Route>
+          <Route></Route>
 
           <Route path="/login" element={<Login></Login>} />
         </Routes>

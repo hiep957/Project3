@@ -13,11 +13,12 @@ const links = [
   // { label: "Profile", path: "/profile" },
   { label: "Category", path: "/category", icon: <FaBagShopping /> },
   { label: "Order", path: "/order", icon: <FaFirstOrder /> },
+  { label: "Users", path: "/users", icon: <IoMdSettings /> },
 ];
 export const Sidebar = () => {
 
   return (
-    <div className="w-64  h-screen border-r-2 bg-gray-200">
+    <div className="w-64  border-r-2 ">
       <div className="flex justify-center border-b-black ">
         <div className="mt-2 p-4 font-bold text-lg">Side bar</div>
       </div>
@@ -27,7 +28,7 @@ export const Sidebar = () => {
           <Link
             to={link.path}
             key={link.path}
-            className="flex flex-row items-center w-full  p-2 hover:bg-blue-200 rounded transition-all"
+            className="flex flex-row items-center w-full  p-2 hover:bg-gray-200 rounded transition-all"
           >
             <div className="flex flex-row">
               <Icon className="h-6 w-6 mr-3">{link.icon}</Icon>
@@ -39,7 +40,7 @@ export const Sidebar = () => {
       <Divider />
       <div className="flex w-full items-center p-2 ">
         <Link
-          className="p-2  hover:bg-blue-200 rounded transiton-all w-full"
+          className="p-2  hover:bg-gray-200 rounded transiton-all w-full"
           to="/settings"
         >
           <div className="flex flex-row ">

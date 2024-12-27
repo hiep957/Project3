@@ -9,7 +9,7 @@ export const Header = () => {
 
  
   return (
-    <div className="flex flex-row justify-between bg-gray-200">
+    <div className="flex flex-row bg-gray-200 justify-between ">
       <div className="font-bold text-lg p-4">
         Trang quản lý Shop bán đồ thể thao
       </div>

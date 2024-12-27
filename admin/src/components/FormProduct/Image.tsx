@@ -100,7 +100,7 @@ const ImageForm: React.FC<ImageFormProps> = ({ mainImage, productImages }) => {
   };
 
   return (
-    <div className="bg-slate-100 p-4 rounded">
+    <div className="bg-white p-4 rounded">
       {/* Main image upload */}
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Upload Main Image</h2>

@@ -27,7 +27,7 @@ const SizeForm = () => {
         <div key={field.id} className="flex flex-col">
           <div className="flex flex-row space-x-3">
             <select
-              className="w-1/4 p-2"
+              className="w-1/4 p-2 border rounded"
               {...register(`sizes.${index}.size` as const)}
               defaultValue={field.size}
             >
@@ -39,7 +39,7 @@ const SizeForm = () => {
             </select>
 
             <input
-              className="w-1/4 p-2"
+              className="w-1/4 p-2 border rounded"
               type="text"
               placeholder="Quantity"
               {...register(`sizes.${index}.quantity` as const)}

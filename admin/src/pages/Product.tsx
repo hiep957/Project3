@@ -1,67 +1,181 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Button from "@mui/material/Button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Button,
+  TextField,
+  Paper,
+  Container,
+} from "@mui/material";
+import axios from "axios";
 import { ProductType } from "../../types";
-import { getProductsRTK } from "../redux/slice/productSlice";
+import { useAppSelector } from "../redux/hooks";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const Product = () => {
-  const { user } = useAppSelector((state) => state.auth);
+  const [products, setProducts] = useState<ProductType[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    rowsPerPage: 10,
+    totalRows: 0,
+  });
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "",
+    brand: "",
+  });
+
   const navigate = useNavigate();
-  console.log("user: ", user);
-  const dispatch = useAppDispatch();
-  const { products, loading, error } = useAppSelector((state) => state.product);
-  console.log("products trong Product Page: ", products);
+  const { user } = useAppSelector((state) => state.auth);
+
   useEffect(() => {
     if (!user) {
       toast.error("Please login first");
       navigate("/login");
     } else {
-      // dispa
-      dispatch(getProductsRTK());
+      fetchProducts();
     }
-  }, [user, navigate, dispatch]);
+  }, [pagination.page, pagination.rowsPerPage, filters]);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_URL}/api/v1/product`, {
+        params: {
+          page: pagination.page + 1,
+          limit: pagination.rowsPerPage,
+          ...filters,
+        },
+      });
+      const { products, pagination: serverPagination } = response.data.data;
+      setProducts(products);
+      setPagination((prev) => ({
+        ...prev,
+        totalRows: serverPagination.total,
+      }));
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+    setPagination({ ...pagination, page: 0 }); // Reset to first page
+  };
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPagination({ ...pagination, page: newPage });
+  };
+
+  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPagination({
+      ...pagination,
+      rowsPerPage: parseInt(e.target.value, 10),
+      page: 0,
+    });
+  };
 
   return (
-    <div className="m-4 w-full">
-      <div>Test</div>
-
-      <Button variant="outlined">
-        <Link to={"/product/add-product"}>Add Product</Link>
-      </Button>
-      <div>
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th>STT</th>
-              <th>Name</th>
-              <th>Brand</th>
-              <th>Price</th>
-              <th>Category</th>
-              <th>Subcategory</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product: ProductType, index: number) => (
-              <tr key={product._id}>
-                <td>{index + 1}</td>
-                <td>{product.name}</td>
-                <td>{product.brand}</td>
-                <td>{product.price}</td>
-                <td>{product.category}</td>
-                <td>{product.subcategory}</td>
-                <td>
-                  <Link to={`/product/${product._id}`}>Edit</Link>
-                  <Link to={`/product/delete-product/${product._id}`}>
-                    Delete
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Container className="m-4">
+      <h2 className="text-xl font-bold mb-4">Product List</h2>
+      <Paper className="p-4 mb-6">
+        <div className="flex gap-4 mb-4">
+          <TextField
+            label="Search"
+            name="search"
+            value={filters.search}
+            onChange={handleFilterChange}
+            variant="outlined"
+            size="small"
+          />
+          <TextField
+            label="Category"
+            name="category"
+            value={filters.category}
+            onChange={handleFilterChange}
+            variant="outlined"
+            size="small"
+          />
+          <TextField
+            label="Brand"
+            name="brand"
+            value={filters.brand}
+            onChange={handleFilterChange}
+            variant="outlined"
+            size="small"
+          />
+        </div>
+        <Button variant="contained" color="primary">
+          <Link to="/product/add-product" className="text-white">
+            Add Product
+          </Link>
+        </Button>
+      </Paper>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <Paper>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>STT</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Brand</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Subcategory</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.map((product, index) => (
+                  <TableRow key={product._id}>
+                    <TableCell>{pagination.page * pagination.rowsPerPage + index + 1}</TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.brand}</TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.subcategory}</TableCell>
+                    <TableCell>
+                      <Link to={`/product/${product._id}`} className="text-blue-500">
+                        Edit
+                      </Link>
+                      {" | "}
+                      <Link to={`/product/delete-product/${product._id}`} className="text-red-500">
+                        Delete
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            component="div"
+            count={pagination.totalRows}
+            page={pagination.page}
+            onPageChange={handleChangePage}
+            rowsPerPage={pagination.rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      )}
+    </Container>
   );
 };

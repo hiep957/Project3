@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import BasicModal from "../components/Modal/Modal";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { getCategories } from "../redux/slice/categorySlice";
+import { Container } from "@mui/material";
+
 const Category = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -17,18 +19,20 @@ const Category = () => {
   }, [dispatch]);
 
   return (
-    <div className="p-4 w-full flex flex-col space-y-2">
-      <h1>Category</h1>
-      <div className="flex justify-end">
-        <Button variant="contained" color="primary" onClick={handleOpen}>
-          Add Category
-        </Button>
+    <Container>
+      <div className="p-4 w-full flex flex-col space-y-2">
+        <h1>Category</h1>
+        <div className="flex justify-end">
+          <Button variant="contained" color="primary" onClick={handleOpen}>
+            Add Category
+          </Button>
+        </div>
+        <div>
+          <CollapsibleTable categories={categories}></CollapsibleTable>
+        </div>
+        <BasicModal open={open} setOpen={setOpen}></BasicModal>
       </div>
-      <div>
-        <CollapsibleTable categories={categories}></CollapsibleTable>
-      </div>
-      <BasicModal open={open} setOpen={setOpen}></BasicModal>
-    </div>
+    </Container>
   );
 };
 

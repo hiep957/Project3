@@ -41,4 +41,5 @@ export type ProductType = {
   subcategory: string; // Tên danh mục con sản phẩm
   product_Image?: string;
   product_Images?: string[];
+  textEditor: any;
 }
