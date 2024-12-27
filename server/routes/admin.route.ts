@@ -18,6 +18,16 @@ import { Admin } from "mongodb";
 import multer from "multer";
 import cloudinary from "cloudinary";
 import { get } from "mongoose";
+import {
+  getCategoryAndCountProductService,
+  getTotalUsersService,
+} from "../services/auth.service";
+import {
+  getAllUserServices,
+  getOrderInDecemberService,
+  getOrderThisYearService,
+  getUserOrderService,
+} from "../services/admin.service";
 dotenv.config();
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -87,4 +97,45 @@ router.put(
   adminUpdateProductController
 );
 
+router.get(
+  "/totalUser",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getTotalUsersService
+);
+
+router.get(
+  "/totalCategoryAndProduct",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getCategoryAndCountProductService
+);
+
+router.get(
+  "/getOrderThisYear",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getOrderThisYearService
+);
+
+router.get(
+  "/getOrderDecember",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getOrderInDecemberService
+);
+
+router.post(
+  "/getAllUser",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getAllUserServices
+);
+
+router.post(
+  "/getAllOrder",
+  isAuth,
+  customRoles(process.env.ADMIN_EMAIL, authorizationRoles.admin),
+  getUserOrderService
+);
 export = router;

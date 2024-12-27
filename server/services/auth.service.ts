@@ -14,6 +14,27 @@ import { AuthenticatedRequestBody } from "../interfaces/CustomType";
 import { ICartUser, IUser } from "../interfaces/User";
 import verifyRefreshToken from "../middlewares/auth/verifyRefreshToken";
 import { authorizationRoles } from "../constants/auth";
+import Redis from "ioredis";
+import nodemailer from "nodemailer";
+export const resetPasswordService = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password, confirmPassword } = req.body;
+    const user = await UserModel.findOne({ email: email });
+
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    user.password = hashedPassword;
+    user.confirmPassword = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  }
+);
 
 export const signupService = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -23,7 +44,18 @@ export const signupService = asyncHandler(
     if (emailAdmin?.includes(req.body.email)) {
       role = authorizationRoles.admin;
     }
-    const { name, surname, email, password } = req.body;
+    const { name, email, password, confirmPassword } = req.body;
+    if (!name || !email || !password || !confirmPassword) {
+      throw new BadRequestError("Please fill in all fields required");
+    }
+    if (password.length < 6) {
+      throw new BadRequestError("Password must be at least 6 characters");
+    }
+    if (password !== confirmPassword) {
+      throw new BadRequestError(
+        "Password and Confirm Password must be the same"
+      );
+    }
     let user = await UserModel.findOne({ email: email });
 
     if (user) {
@@ -34,7 +66,6 @@ export const signupService = asyncHandler(
 
     const newUser = new UserModel({
       name,
-      surname,
       email,
       password: hashedPassword,
       confirmPassword: hashedPassword,
@@ -49,28 +80,21 @@ export const signupService = asyncHandler(
       userId: userSaved._id,
     };
 
-    const accessTokenKey = process.env.ACCESS_TOKEN_SECRET as string;
-    const refreshTokenKey = process.env.REFRESH_TOKEN_SECRET as string;
-
-    const accessTokenOptions: SignOptions = {
-      expiresIn: "15m",
-      audience: String(userSaved._id),
-    };
-
-    const refreshTokenOptions: SignOptions = {
-      expiresIn: "7d",
-      audience: String(userSaved._id),
-    };
-
     const generatedAccessToken = await token.generateToken(
-      payload,
-      accessTokenKey,
-      accessTokenOptions
+      { userId: newUser._id },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "1d",
+        audience: String(newUser._id),
+      }
     );
     const generatedRefreshToken = await token.generateToken(
-      payload,
-      refreshTokenKey,
-      refreshTokenOptions
+      { userId: newUser._id },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      {
+        expiresIn: "7d",
+        audience: String(newUser._id),
+      }
     );
 
     token.accessToken = generatedAccessToken;
@@ -83,10 +107,23 @@ export const signupService = asyncHandler(
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
     };
+    res.cookie("accessToken", token.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", token.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(201).json({
       status: "Registration successful",
-      data,
+      user: newUser,
     });
   }
 );
@@ -140,6 +177,7 @@ export const loginService = asyncHandler(
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
     };
+    
 
     res.cookie("accessToken", token.accessToken, {
       httpOnly: true,
@@ -173,12 +211,13 @@ export const testService = asyncHandler(
 
 export const updateService = asyncHandler(
   async (
-    req: AuthenticatedRequestBody<ICartUser>,
+    req: AuthenticatedRequestBody<IUser>,
     res: Response,
     next: NextFunction
   ) => {
-    console.log("update service", req.params.userId);
-    const { name, surname, email, address, phoneNumber, bio } = req.body;
+    const userId = req.user?._id;
+    const { name, surname, email, address, phoneNumber, bio, password } =
+      req.body;
     const updateFields: any = {};
 
     if (name !== undefined) {
@@ -199,11 +238,14 @@ export const updateService = asyncHandler(
     if (bio !== undefined) {
       updateFields.bio = bio;
     }
-    const updateUser = await UserModel.findByIdAndUpdate(
-      req.params.userId,
-      updateFields,
-      { new: true }
-    );
+    if (password !== undefined) {
+      const hashedPassword = await bcrypt.hash(password, 12);
+      updateFields.password = hashedPassword;
+      updateFields.confirmPassword = hashedPassword;
+    }
+    const updateUser = await UserModel.findByIdAndUpdate(userId, updateFields, {
+      new: true,
+    });
 
     if (!updateUser) {
       throw new BadRequestError("User not updated");
@@ -294,5 +336,123 @@ export const getAuthProfileService = asyncHandler(
   }
 );
 
+import dotenv from "dotenv";
+import CategoryModel from "../models/Category.model";
+import ProductModel from "../models/Product.model";
+dotenv.config();
+const App_password = process.env.APP_PASSWORD?.toString();
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  auth: {
+    user: "hiepma80@gmail.com",
+    pass: App_password,
+  },
+});
 
+const redis = new Redis();
+export const sendCodeResetPasswordService = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+    //Sinh ra 6 số ngẫu nhiên
+    const resetPasswordCode = Math.floor(100000 + Math.random() * 900000);
+    //Lưu vào redis với thời gian tồn tại là 1 giờ
+    if (await redis.get(email)) {
+      await redis.del(email);
+    }
+    await redis.set(email, resetPasswordCode, "EX", 60 * 60);
 
+    await transporter.sendMail({
+      from: "hiepma80@gmail.com",
+      to: email,
+      subject: "Email Reset Password",
+      text: "Hãy bảo mật mã này, không chia sẻ cho người khác. Thời gian tồn tại mã là 1 giờ",
+      html: `<p>Mã để bạn reset Password: <strong>${resetPasswordCode}</strong></p>`,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Code sent to your email", code: resetPasswordCode });
+  }
+);
+
+export const verifyCodeResetPasswordService = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      throw new BadRequestError("Please provide email and code");
+    }
+    const resetPasswordCode = await redis.get(email);
+    console.log("resetPasswordCode", resetPasswordCode);
+    if (!resetPasswordCode) {
+      throw new BadRequestError("Code is expired");
+    }
+    if (resetPasswordCode !== code) {
+      throw new BadRequestError("Code is not correct");
+    }
+    res.status(200).json({ message: "Code is correct" });
+  }
+);
+
+export const updatePasswordWithEmailService = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      throw new BadRequestError("Please provide email and password");
+    }
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestError("User not found");
+    }
+    const hashedPassword = await bcrypt.hash(password, 12);
+    user.password = hashedPassword;
+    user.confirmPassword = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password updated successfully", user });
+  }
+);
+
+export const getTotalUsersService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<IUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    //đếm role user
+    const totalUsers = await UserModel.countDocuments({ role: "user" });
+    if (!totalUsers) {
+      throw new BadRequestError("No user found");
+    }
+    res.status(200).json({ message: "thành công", totalUsers: totalUsers });
+  }
+);
+
+export const getCategoryAndCountProductService = asyncHandler(
+  async (
+    req: AuthenticatedRequestBody<IUser>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const categories = await ProductModel.aggregate([
+      {
+        $group: {
+          _id: "$category", // Nhóm theo trường `category`
+          productCount: { $sum: 1 }, // Đếm số lượng sản phẩm trong mỗi nhóm
+        },
+      },
+      {
+        $project: {
+          _id: 0, // Không trả về _id mặc định
+          category: "$_id", // Đổi tên `_id` thành `category`
+          productCount: 1, // Bao gồm trường `productCount`
+        },
+      },
+    ]);
+
+    if (!categories.length) {
+      throw new BadRequestError("No products found");
+    }
+
+    res.status(200).json({ message: "Thành công", categories });
+  }
+);

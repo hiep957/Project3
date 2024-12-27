@@ -6,11 +6,10 @@ import { removeCartItemAfterPaymentService } from '../services/cart.service';
 
 const router = express.Router();
 
-
+router.get('/', isAuth, getCartController);
 router.post('/create-cart', isAuth, createCartController)
 router.post('/add-cart', isAuth, addToCartController);
-router.post('/:cartId/remove-item-cart', isAuth, decreaseItemCartController );
-router.get('/', isAuth, getCartController);
+router.post('/remove-item-cart', isAuth, decreaseItemCartController );
 router.delete('/deleteAfterPayment/:orderCode', isAuth, removeCartItemAfterPaymentService);
 const b = null;
 export default router;

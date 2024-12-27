@@ -56,18 +56,21 @@ const ProductSchema: Schema<IProduct> = new Schema(
     subcategory: {
       type: String,
     },
-    
+
     isActive: {
       type: Boolean,
       default: true,
+    },
+    textEditor: {
+      type: String,
     },
   },
   { timestamps: true }
 );
 
 ProductSchema.index({ name: "text", description: "text" });
-ProductSchema.index({category:1 });
-ProductSchema.index({subcategory:1 });
-ProductSchema.index({brand:1 });
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ subcategory: 1 });
+ProductSchema.index({ brand: 1 });
 
 export default mongoose.model<IProduct>("Product", ProductSchema);

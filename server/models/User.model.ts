@@ -15,7 +15,6 @@ const UserSchema: Schema<IUser> = new Schema(
       type: String,
       trim: true,
       lowercase: true,
-      required: [true, "Please provide surname"],
       minLength: [3, "Surname can't be smaller than 3 characters"],
       maxLength: [15, "Surname can't be greater than 15 characters"],
     },
@@ -35,9 +34,9 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     password: {
       type: String,
+      trim:true,
       required: [true, "Please provide password"],
       minlength: [6, "Password must be more than 6 characters"],
-      trim: true,
       select: false,
     },
     confirmPassword: {

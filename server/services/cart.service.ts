@@ -10,6 +10,7 @@ import { ICart } from "../interfaces/Cart";
 import mongoose, { Types } from "mongoose";
 import ProductModel from "../models/Product.model";
 import OrderModel from "../models/Order.model";
+import { BadRequestError } from "../utils/ApiError";
 
 export const createCartService = asyncHandler(
   async (
@@ -30,7 +31,7 @@ export const createCartService = asyncHandler(
     const cartSaved = await newCart.save();
     res
       .status(200)
-      .json({ message: "Cart created successfully", cart: cartSaved });
+      .json({ message: "Cart created successfully", cartL: cartSaved });
   }
 );
 
@@ -93,7 +94,7 @@ export const addToCartService = asyncHandler(
 
     res
       .status(200)
-      .json({ message: "Add to cart successfully", cart: cartSave });
+      .json({ message: "Add to cart successfully", cart:cartSave });
   }
 );
 export const decreaseItemCartService = asyncHandler(
@@ -102,17 +103,19 @@ export const decreaseItemCartService = asyncHandler(
     res: Response,
     next: NextFunction
   ) => {
-    const { cartId } = req.params;
+    const userId = req.user?._id;
     const { productId, quantity, price, size } = req.body;
-
-    const cart = await CartModel.findById(cartId)
+    if(!productId || !quantity || !price || !size){
+      throw new BadRequestError("Missing required fields");
+    }
+    const cart = await CartModel.findOne({ userId })
       .populate({
         path: "items.productId",
         model: "Product",
       })
       .exec();
-
-    if (!cart) throw new Error("Cart not found");
+      //6745e57c3a366c83f40686fb
+    if (!cart) throw new BadRequestError("Cart not found");
 
     const itemIndex = cart.items.findIndex((item) => {
       // Lấy ID của sản phẩm
@@ -182,7 +185,7 @@ export const getCartService = asyncHandler(
     if (!cart) throw new Error("Cart not found");
     res.status(200).json({
       message: "Get cart successfully",
-      cart,
+      cart: cart,
     });
   }
 );

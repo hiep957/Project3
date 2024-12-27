@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
 import axios from "axios";
-const httpsServer = "https://697c-118-71-223-251.ngrok-free.app";
+const httpsServer = "https://13e2-118-71-223-251.ngrok-free.app";
 const UPLOAD_DIR = path.join(__dirname, "../public/uploads");
 
 export const vitonService = asyncHandler(
@@ -35,8 +35,8 @@ export const vitonService = asyncHandler(
 
     const data = {
       crop: false,
-      seed: 42,
-      steps: 30,
+      seed: 30,
+      steps: 15,
       category: "upper_body",
       force_dc: false,
       human_img: imageUrl,

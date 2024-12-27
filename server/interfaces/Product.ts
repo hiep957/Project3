@@ -22,4 +22,5 @@ export interface IProduct extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  textEditor: any;  
 }

@@ -14,7 +14,7 @@ import PayOS from "@payos/node";
 //For env File
 dotenv.config();
 
-const app: Application = express();
+export const app: Application = express();
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.DB_URL;
 
