@@ -8,8 +8,8 @@ import { toast } from "react-toastify";
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 
 const VitonTest = ({ data }: { data: ProductType }) => {
-  console.log("data", data.product_Image);
-  const linkImageServer = `https://697c-118-71-223-251.ngrok-free.app${data.product_Image}`;
+  // console.log("data", data.product_Image);
+  const linkImageServer = `https://13e2-118-71-223-251.ngrok-free.app${data.product_Image}`;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preViewImage, setPreViewImage] = useState<string>("");
   const [hovered, setHovered] = useState<boolean>(false);

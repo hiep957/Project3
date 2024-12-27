@@ -9,7 +9,6 @@ import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import { useState } from "react";
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 const SwiperImage = ({ product }: { product: ProductType }) => {
-  console.log("product trong swiper", product);
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
   const linkImage = product.product_Images.map((image) => `${API_URL}${image}`);
 

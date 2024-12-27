@@ -9,22 +9,92 @@ import {
 } from "@/redux/slice/cartSlice";
 import { ProductType } from "@/utils/Type";
 import {
+  Avatar,
   Box,
   Breadcrumbs,
   Button,
   Container,
   Divider,
   Link,
+  Rating,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import Grid from "@mui/material/Grid2";
 import { get } from "http";
 import { GetServerSideProps } from "next";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import VitonTest from "@/components/VitonTest";
+
+import AddReviewDialog from "@/components/Review/AddReviewDialog";
+import ReviewItem from "@/components/Review/ReviewItem";
+import { da } from "date-fns/locale";
 
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 const Product = ({ data }: { data: ProductType }) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [reviewData, setReviewData] = useState<any[]>([]);
+  const handleOpenDialog = () => setDialogOpen(true);
+  const handleCloseDialog = () => setDialogOpen(false);
+
+  console.log("Product: ", data);
+
+  const handleAddReview = async (rating: number, comment: string) => {
+    console.log("Bình luận mới:", rating, comment);
+    // Gửi dữ liệu lên API tại đây
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/review/create/${data._id}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ rating: rating, comment: comment }),
+        }
+      );
+      if (response.ok) {
+        getReview();
+        toast.success("Thêm bình luận thành công");
+        const data = await response.json();
+        console.log("data review", data);
+      } else {
+        const error = (await response.json()).message;
+        toast.error(error || "Đã có lỗi xảy ra");
+      }
+    } catch (error) {
+      console.log("Error adding review:", error);
+    }
+    setDialogOpen(false);
+  };
+  const getReview = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/review/getProductReviews/${data._id}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Dữ liệu bình luận", data);
+        setReviewData(data.data.reviews);
+      } else {
+        const error = (await response.json()).message;
+        toast.error(error || "Đã có lỗi xảy ra");
+      }
+    } catch (error) {
+      console.log("Error adding review:", error);
+    }
+  };
+  useEffect(() => {
+    getReview();
+  }, [data._id]);
+
   const { isAuth } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const { cart, loading, error } = useAppSelector((state) => state.cart);
@@ -34,10 +104,10 @@ const Product = ({ data }: { data: ProductType }) => {
   const handleSizeChange = (size: string) => {
     setSelectedSize(size);
   };
-  console.log("selectedSize", selectedSize);
+  // console.log("selectedSize", selectedSize);
 
-  console.log("productData", data);
-  console.log("cart trong Cart.tsx: ", cart);
+  // console.log("productData", data);
+  // console.log("cart trong Cart.tsx: ", cart);
 
   const handleCreateCart = () => {
     dispatch(createCartRTK());
@@ -67,7 +137,7 @@ const Product = ({ data }: { data: ProductType }) => {
     dispatch(getCartRTK());
   };
 
-  console.log("product", data);
+  // console.log("product", data);
   return (
     <Layout>
       <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
@@ -124,7 +194,54 @@ const Product = ({ data }: { data: ProductType }) => {
           </Grid>
         </Grid>
 
-        <VitonTest data={data} ></VitonTest>
+        <VitonTest data={data}></VitonTest>
+
+        {data.textEditor && (
+          <div className="mt-8">
+            <div className="flex items-center justify-center text-center font-semibold text-xl mb-4">
+              Thông tin thêm về sản phẩm
+            </div>
+            <div
+              className="prose max-w-none border p-2 rounded-lg"
+              dangerouslySetInnerHTML={{ __html: data.textEditor }}
+            ></div>
+          </div>
+        )}
+        <div className="mt-8">
+          <div className="flex items-center justify-center text-center font-semibold text-xl mb-4">
+            Đánh giá sản phẩm
+          </div>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleOpenDialog}
+            >
+              Thêm Bình Luận
+            </Button>
+            <AddReviewDialog
+              open={dialogOpen}
+              onClose={handleCloseDialog}
+              onSubmit={handleAddReview}
+            />
+            {/* <ReviewItem /> */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {reviewData &&
+                reviewData.map((review) => (
+                  <ReviewItem
+                    _id={review._id}
+                    rating={review.rating}
+                    comment={review.comment}
+                    productId={review.productId}
+                    userId={review.userId}
+                    createdAt={review.createdAt}
+                    updatedAt={review.updatedAt}
+                    getReview={getReview}
+                  />
+                ))}
+            </div>
+          </div>
+        </div>
       </Container>
     </Layout>
   );
@@ -137,6 +254,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const response = await fetch(`${API_URL}/api/v1/product/${id}`);
   const product = await response.json();
   const data = product.data;
+  console.log("data", data);
   return {
     props: {
       data,

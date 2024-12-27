@@ -4,9 +4,17 @@ import { useRouter } from "next/router";
 import Grid from "@mui/material/Grid2";
 import { FC, useEffect, useState } from "react";
 import { ProductType } from "@/utils/Type";
-import { CircularProgress, Container, Pagination, PaginationItem } from "@mui/material";
+import {
+  CircularProgress,
+  Container,
+  Pagination,
+  PaginationItem,
+} from "@mui/material";
 
 import ProductCard from "@/components/ProductCart";
+import { useAppSelector } from "@/redux/hooks";
+import { Category } from "@/redux/slice/categorySlice";
+import { RootState } from "@/redux/store";
 
 const CategoryPage: FC = () => {
   const router = useRouter();
@@ -187,7 +195,15 @@ const CategoryPage: FC = () => {
       { shallow: true }
     );
   };
-
+  const categories: Category[] = useAppSelector(
+    (state: RootState) => state.category.categories
+  );
+  console.log("categories trong categoryPage", categories);
+  const { slug } = router.query;
+  const filteredCategory = categories.find(
+    (category) => category.name === slug
+  );
+  console.log("filteredCategory", filteredCategory);
   return (
     <Layout>
       <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
@@ -201,11 +217,12 @@ const CategoryPage: FC = () => {
               title="Sub Category"
               value={filters.subcategory}
               onChange={handleSubCategoryChange}
-              options={[
-                { value: "Áo bóng đá", label: "Áo bóng đá" },
-                { value: "Quần bóng đá", label: "Quần bóng đá" },
-                { value: "other", label: "Other" },
-              ]}
+              options={
+                filteredCategory?.subcategories.map((sub) => ({
+                  value: sub.name,
+                  label: sub.name,
+                })) || []
+              }
             />
 
             <FilterSection

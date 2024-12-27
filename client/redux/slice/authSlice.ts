@@ -1,6 +1,6 @@
-import { LoginType } from "@/utils/Type";
+import { LoginType, SignupType } from "@/utils/Type";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { login, logout } from "../api";
+import { login, logout, signup } from "../api";
 import { HYDRATE } from "next-redux-wrapper";
 
 export type User = {
@@ -32,6 +32,15 @@ const initialState: UserState = {
   loading: false,
   error: null,
 };
+
+export const signupUser = createAsyncThunk(
+  "auth/signupUser",
+  async (signupData: SignupType, { rejectWithValue }) => {
+    const response = await signup(signupData);
+    console.log("Response", response);
+    return response;
+  }
+)
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
@@ -69,6 +78,19 @@ const authSlice = createSlice({
         };
       })
 
+      .addCase(signupUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signupUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuth = true;
+      })
+      .addCase(signupUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Signup failed";
+      })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;

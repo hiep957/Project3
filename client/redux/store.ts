@@ -5,18 +5,20 @@ import storage from "redux-persist/lib/storage";
 import categoryReducer from "./slice/categorySlice";
 import authReducer from "./slice/authSlice";
 import cartReducer from "./slice/cartSlice";
+import userReducer from "./slice/userSlice";
 // Kết hợp các reducer
 const rootReducer = combineReducers({
   category: categoryReducer,
   auth: authReducer,
   cart: cartReducer,
+  user: userReducer
 });
 
 // Cấu hình redux-persist
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth", "cart"], // Lưu trữ state của auth
+  whitelist: ["auth", "cart","user"], // Lưu trữ state của auth
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -30,6 +32,7 @@ const masterReducer = (state: any, action: any) => {
     };
     if (state.auth) nextState.auth = state.auth; // Bảo toàn auth state
     if (state.cart) nextState.cart = state.cart;
+    if (state.user) nextState.user = state.user;
     return nextState;
   }
   return persistedReducer(state, action);

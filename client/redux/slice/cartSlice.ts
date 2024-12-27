@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { addToCart, createCart, getCart } from "../api";
+import { addToCart, createCart, decreaseItemCart, getCart } from "../api";
 import { HYDRATE } from "next-redux-wrapper";
 
 export type Cart = {
@@ -31,7 +31,7 @@ export const getCartRTK = createAsyncThunk("cart/getCart", async () => {
   const response = await getCart();
   console.log("get cart", response);
   return response.cart;
-})
+});
 
 export const createCartRTK = createAsyncThunk("cart/createCart", async () => {
   const response = await createCart();
@@ -45,14 +45,33 @@ export const addToCartRTK = createAsyncThunk(
     productId,
     quantity,
     price,
-    size
+    size,
   }: {
     productId: string;
     quantity: number;
     price: number;
     size: string;
   }) => {
-    const response = await addToCart(productId, quantity, price,size);
+    const response = await addToCart(productId, quantity, price, size);
+    console.log("Response", response);
+    return response.cart;
+  }
+);
+
+export const decreaseItemCartRTK = createAsyncThunk(
+  "cart/decreaseItemCart",
+  async ({
+    productId,
+    quantity,
+    price,
+    size,
+  }: {
+    productId: string;
+    quantity: number;
+    price: number;
+    size: string;
+  }) => {
+    const response = await decreaseItemCart(productId, quantity, price, size);
     console.log("Response", response);
     return response.cart;
   }
@@ -69,17 +88,17 @@ const cartSlice = createSlice({
       state.cart = null;
       state.loading = false;
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(HYDRATE, (state, action: any) => {
-        if (!action.payload.cart.cart ||  !action.payload.auth.isAuth) {
+        if (!action.payload.cart.cart || !action.payload.auth.isAuth) {
           return state;
         }
         return {
           ...state,
-          cart: null
+          cart: null,
         };
       })
       .addCase(createCartRTK.pending, (state) => {
@@ -109,7 +128,22 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "Something went wrong";
       })
-      
+
+      .addCase(decreaseItemCartRTK.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(
+        decreaseItemCartRTK.fulfilled,
+        (state, action: PayloadAction<Cart>) => {
+          state.loading = false;
+          state.cart = action.payload;
+        }
+      )
+      .addCase(decreaseItemCartRTK.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Something went wrong";
+      })
+
       .addCase(getCartRTK.pending, (state) => {
         state.loading = true;
       })

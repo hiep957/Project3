@@ -30,6 +30,7 @@ export type ProductType = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  textEditor: any;  
 };
 
 
@@ -37,3 +38,26 @@ export type LoginType = {
   email: string;
   password: string;
 }
+
+export type SignupType = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+// export type UserType ={
+//   _id: string;
+//   name: string;
+//   surname: string;
+//   password: string;
+//   email: string;
+//   confirmPassword: string;
+//   address?: string;
+//   phoneNumber?: string;
+//   bio?: string;
+//   birthDate?: string;
+//   token?: string;
+//   accessToken?: string;
+//   refreshToken?: string;
+//   role?: string;
+// }

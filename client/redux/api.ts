@@ -1,7 +1,10 @@
-import { LoginType } from "@/utils/Type";
+import { LoginType, SignupType } from "@/utils/Type";
 
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 import { toast } from "react-toastify";
+import { User } from "./slice/authSlice";
+import { useAppDispatch } from "./hooks";
+import { getUser } from "./slice/userSlice";
 export const getCategory = async () => {
   const response = await fetch(`${API_URL}/api/v1/admin/categories`, {
     method: "GET",
@@ -56,6 +59,7 @@ export const login = async (loginData: LoginType) => {
     },
     body: JSON.stringify(loginData),
   });
+  console.log("API", API_URL);
   if (response.ok) {
     const data = await response.json();
 
@@ -65,6 +69,25 @@ export const login = async (loginData: LoginType) => {
     throw new Error(error.message);
   }
 };
+
+export const signup = async (signupData: SignupType) => {
+  const response = await fetch(`${API_URL}/api/v1/auth/signup`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(signupData),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    return data;
+  } else {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+}
+
 
 export const logout = async () => {
   const response = await fetch(`${API_URL}/api/v1/auth/logout`, {
@@ -97,6 +120,30 @@ export const createCart = async () => {
     throw new Error(error.message);
   }
 };
+
+export const decreaseItemCart = async(
+  productId: string,
+  quantity: number,
+  price: number,
+  size: string,
+) => {
+  const response = await fetch(`${API_URL}/api/v1/cart/remove-item-cart`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ productId, quantity, price, size }),
+  });
+  if (response.ok) {
+    const data = await response.json();
+    toast.success(data.message);
+    return data;
+  } else {
+    const error = await response.json();
+    toast.error(error.message);
+    throw new Error(error.message);
+  }
+}
+
 
 export const addToCart = async (
   productId: string,
@@ -141,12 +188,14 @@ export const getCart = async () => {
   }
 };
 
-
 export const getTopFiveProductSell = async () => {
-  const response = await fetch(`${API_URL}/api/v1/product/top-five-product-sell`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
+  const response = await fetch(
+    `${API_URL}/api/v1/product/top-five-product-sell`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
   if (response.ok) {
     const data = await response.json();
     return data;
@@ -154,4 +203,24 @@ export const getTopFiveProductSell = async () => {
     const error = await response.json();
     throw new Error(error.message);
   }
-}
+};
+
+
+export const updateUserService = async (data: Partial<User>) => {
+  const response = await fetch(`${API_URL}/api/v1/auth/update`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  if (response.ok) {
+ 
+    const data = await response.json();
+    toast.success(data.message);
+    return data;
+  } else {
+    const error = await response.json();
+    toast.error(error.message);
+    throw new Error(error.message);
+  }
+};

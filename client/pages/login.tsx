@@ -21,6 +21,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { get } from "http";
 import { getCartRTK } from "@/redux/slice/cartSlice";
+import { getUser } from "@/redux/slice/userSlice";
+
+const URL = process.env.SV_HOST || "http://localhost:5000";
 
 function Copyright(props: any) {
   return (
@@ -44,6 +47,7 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function LoginForm() {
+  console.log("URL: ", URL);
   const router = useRouter();
   const {
     handleSubmit,
@@ -60,6 +64,7 @@ export default function LoginForm() {
       console.log(loginUser.fulfilled.match(resultAction));
       toast.success("Login successful");
       dispatch(getCartRTK());
+      dispatch(getUser());
       router.push("/");
     } else {
       toast.error("Login failed");
@@ -84,7 +89,7 @@ export default function LoginForm() {
             {/* <LockOutlinedIcon /> */}
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            Sign In
           </Typography>
           <Box
             component="form"
@@ -171,7 +176,7 @@ export default function LoginForm() {
                 </Link>
               </Grid>
               <Grid size={8}>
-                <Link href="/register" variant="body2">
+                <Link href="/signup" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

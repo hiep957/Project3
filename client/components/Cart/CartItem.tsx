@@ -1,8 +1,15 @@
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  addToCartRTK,
+  decreaseItemCartRTK,
+  getCartRTK,
+} from "@/redux/slice/cartSlice";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { IoFastFood } from "react-icons/io5";
 
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 export type CartProps = {
@@ -20,6 +27,9 @@ const CartItem = ({
   data: CartProps[];
   onSelectionChange: (selectedData: any[]) => void;
 }) => {
+  const { cart, loading, error } = useAppSelector((state) => state.cart);
+
+  const dispatch = useAppDispatch();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const handleCheckboxChange = (itemId: string) => {
     const updatedSelectedItems = selectedItems.includes(itemId)
@@ -31,7 +41,29 @@ const CartItem = ({
       updatedSelectedItems.includes(item._id)
     );
     onSelectionChange(selectedData); // Gửi danh sách mới về component cha
+    console.log("selectedData: ", selectedData);
   };
+
+  const handleClickPlus = async (
+    productId: string,
+    price: number,
+    size: string
+  ) => {
+    dispatch(addToCartRTK({ productId, quantity: 1, price, size }));
+    dispatch(getCartRTK());
+  };
+
+  const handleClickMinus = async (
+    productId: string,
+    price: number,
+    size: string
+  ) => {
+    await dispatch(
+      decreaseItemCartRTK({ productId, quantity: 1, price, size })
+    );
+    await dispatch(getCartRTK());
+  };
+
   return (
     <div className="flex flex-col space-y-8">
       {data.map((item) => (
@@ -63,7 +95,8 @@ const CartItem = ({
                 <Link href={`/product/${item.productId._id}`}>
                   <p>Tên sản phẩm: {item.productId.name}</p>
                 </Link>
-                <p>Giá: {item.price} VNĐ</p>
+                <p>Số lượng: {item.quantity}</p>
+                <p>Giá: {item.productId.price} VNĐ</p>
                 <p>Size bạn đã chọn: {item.size}</p>
               </div>
             </Grid>
@@ -79,13 +112,27 @@ const CartItem = ({
             >
               <Box>
                 <div className="flex flex-row border rounded w-24 h-8 items-center overflow-hidden">
-                  <button className="w-1/3 hover:bg-red-500 text-center border-r text-lg font-semibold transition-all">
+                  <button
+                    className="w-1/3 hover:bg-red-500 text-center border-r text-lg font-semibold transition-all"
+                    onClick={() =>
+                      handleClickMinus(
+                        item.productId._id,
+                        item.productId.price,
+                        item.size
+                      )
+                    }
+                  >
                     -
                   </button>
                   <div className="w-1/3 text-center  text-sm">
                     {item.quantity}
                   </div>
-                  <button className="w-1/3 hover:bg-red-500 text-center text-lg border-l font-semibold transition-all">
+                  <button
+                    className="w-1/3 hover:bg-red-500 text-center text-lg border-l font-semibold transition-all"
+                    onClick={() =>
+                      handleClickPlus(item.productId._id, item.productId.price, item.size)
+                    }
+                  >
                     +
                   </button>
                 </div>

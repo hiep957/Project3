@@ -20,7 +20,7 @@ const Cart = () => {
   useEffect(() => {
     if (selectedItems.length > 0) {
       const total = selectedItems.reduce(
-        (acc, item) => acc + item.price * item.quantity,
+        (acc, item) => acc + item.productId.price * item.quantity,
         0
       );
       setTotalPrice(total);

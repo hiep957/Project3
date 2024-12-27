@@ -11,6 +11,11 @@ export default {
       },
       {
         protocol: 'https',
+        hostname: 'project3-ya8f.onrender.com',
+        pathname: '/images/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'deltasport.vn',
       },
     ],
