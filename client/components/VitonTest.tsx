@@ -8,8 +8,9 @@ import { toast } from "react-toastify";
 const API_URL = process.env.SV_HOST || "http://localhost:5000";
 
 const VitonTest = ({ data }: { data: ProductType }) => {
+  const [body, setBody] = useState("upper_body");
   // console.log("data", data.product_Image);
-  const linkImageServer = `https://13e2-118-71-223-251.ngrok-free.app${data.product_Image}`;
+  const linkImageServer = `https://4bb0-118-71-223-251.ngrok-free.app${data.product_Image}`;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preViewImage, setPreViewImage] = useState<string>("");
   const [hovered, setHovered] = useState<boolean>(false);
@@ -27,6 +28,10 @@ const VitonTest = ({ data }: { data: ProductType }) => {
     }
   };
 
+  const handleSelectBody = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setBody(event.target.value);
+    console.log(event.target.value);
+  };
   // Xử lý upload file
   const handleFileUpload = async () => {
     if (!selectedFile) {
@@ -36,8 +41,8 @@ const VitonTest = ({ data }: { data: ProductType }) => {
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("model", linkImageServer)
-
+    formData.append("model", linkImageServer);
+    formData.append("body", body);
     try {
       setIsLoading(true);
       const response = await fetch(`${API_URL}/api/v1/viton/generate-image`, {
@@ -66,6 +71,12 @@ const VitonTest = ({ data }: { data: ProductType }) => {
     <Container maxWidth="lg">
       <div className="text-center font-semibold text-xl mb-4">
         Thử sản phẩm với ảnh của bạn
+      </div>
+      <div className="flex justify-center ">
+        <select value={body} onChange={handleSelectBody} className="mt-2 p-2 border border-gray-300 rounded-md">
+          <option value="upper_body">Áo</option>
+          <option value="lower_body">Quần</option>
+        </select>
       </div>
       <Grid container spacing={2}>
         {/* Grid 1 */}

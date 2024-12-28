@@ -21,7 +21,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <Header />
       <div>{children}</div>
 
-      <footer className="bg-gray-800 text-white py-12 mt-8">
+      <footer className="bg-gray-300 text-black py-12 mt-8">
         <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
           <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
