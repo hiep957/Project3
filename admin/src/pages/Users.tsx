@@ -11,35 +11,25 @@ import {
   Pagination,
   Typography,
   Box,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
 } from "@mui/material";
-import { format } from "date-fns";
 
 const API_URL = "http://localhost:5000";
 
-export type OrderProps = {
+type User = {
   _id: string;
-  userId: string;
-  orderCode: number;
-  items: any[];
-  totalAmount: number;
-  status: string;
-  buyerName: string;
-  buyerEmail: string;
-  buyerAddress: string;
-  buyerPhone: string;
-  paymentMode: string;
-  paymentStatus: string;
-  createdAt: string;
-  updatedAt: string;
+  name: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  role?: string;
 };
 
-const MyOrder = () => {
-  const [orders, setOrders] = useState<OrderProps[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<OrderProps | null>(null);
+const UserList = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -48,15 +38,16 @@ const MyOrder = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [openModal, setOpenModal] = useState(false);
 
-  const getUserOrder = async (page = 1, limit = 6) => {
+  const fetchUsers = async (page = 1, limit = 6) => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${API_URL}/api/v1/admin/getAllOrder?page=${page}&limit=${limit}`,
+        `${API_URL}/api/v1/admin/getAllUser?page=${page}&limit=${limit}`,
         {
-          method: "post",
+          method: "POST",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
@@ -66,107 +57,89 @@ const MyOrder = () => {
 
       if (response.ok) {
         const { data } = await response.json();
-        setOrders(data.orders);
+        console.log("data trong UserList: ", data);
+        setUsers(data.userList);
         setPagination(data.pagination);
         setError(null);
       } else {
         const errorData = await response.json();
-        setError(errorData.message || "Failed to fetch orders");
+        setError(errorData.message || "Failed to fetch users");
       }
     } catch (err) {
-      setError("An error occurred while fetching orders");
+      setError("An error occurred while fetching users");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    getUserOrder(pagination.page, pagination.limit);
+    fetchUsers(pagination.page, pagination.limit);
   }, [pagination.page]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    setPagination(prev => ({ ...prev, page: value }));
+    setPagination((prev) => ({ ...prev, page: value }));
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending":
-        return "warning";
-      case "Completed":
-        return "success";
-      case "Cancelled":
-        return "error";
-      default:
-        return "default";
-    }
-  };
-
-  const handleOpenProductDetails = (order: OrderProps) => {
-    setSelectedOrder(order);
+  const handleOpenUserDetails = (user: User) => {
+    setSelectedUser(user);
     setOpenModal(true);
   };
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    setSelectedOrder(null);
+    setSelectedUser(null);
   };
 
   return (
     <Container maxWidth={false} sx={{ maxWidth: "1280px" }}>
-      <Box className="py-10">
-        <Typography variant="h4" component="h1" gutterBottom>
-          Danh sách đơn hàng
+      <Box py={4}>
+        <Typography variant="h4" gutterBottom>
+          User List
         </Typography>
 
         {isLoading ? (
-          <Typography>Đang tải đơn hàng...</Typography>
+          <Typography>Loading users...</Typography>
         ) : error ? (
           <Typography color="error">{error}</Typography>
-        ) : orders.length === 0 ? (
-          <Typography>Không tìm thấy đơn hàng.</Typography>
+        ) : users.length === 0 ? (
+          <Typography>No users found.</Typography>
         ) : (
           <>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Mã đơn hàng</TableCell>
-                    <TableCell>Tổng tiền</TableCell>
-                    <TableCell>Trạng thái</TableCell>
-                    <TableCell>Ngày đặt</TableCell>
-                    <TableCell>Chi tiết sản phẩm</TableCell>
+                    <TableCell>STT</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Phone Number</TableCell>
+                    <TableCell>Address</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order._id}>
-                      <TableCell>{order.orderCode}</TableCell>
-                      <TableCell>
-                        {order.totalAmount.toLocaleString()} VNĐ
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={order.status}
-                          color={getStatusColor(order.status)}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(order.createdAt), "dd MMM yyyy")}
-                      </TableCell>
+                  {users.map((user,index) => (
+                    <TableRow key={user._id}>
+                      <TableCell>{index + 1 + (pagination.page - 1) * pagination.limit}</TableCell>
+                      <TableCell>{`${user.name} ${user.surname}`}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.phoneNumber}</TableCell>
+                      <TableCell>{user.address}</TableCell>
+                      <TableCell>{user.role || "User"}</TableCell>
                       <TableCell>
                         <Typography
                           color="primary"
-                          onClick={() => handleOpenProductDetails(order)}
                           style={{
                             cursor: "pointer",
                             textDecoration: "underline",
                           }}
+                          onClick={() => handleOpenUserDetails(user)}
                         >
-                          Xem chi tiết
+                          View Details
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -187,56 +160,29 @@ const MyOrder = () => {
             <Dialog
               open={openModal}
               onClose={handleCloseModal}
-              maxWidth="md"
+              maxWidth="sm"
               fullWidth
             >
-              <DialogTitle>Chi Tiết Đơn Hàng</DialogTitle>
+              <DialogTitle>User Details</DialogTitle>
               <DialogContent>
-                {selectedOrder && (
+                {selectedUser && (
                   <Box>
                     <Typography>
-                      Mã đơn hàng: {selectedOrder.orderCode}
+                      <strong>Name:</strong>{" "}
+                      {`${selectedUser.name} ${selectedUser.surname}`}
                     </Typography>
                     <Typography>
-                      Tổng tiền: {selectedOrder.totalAmount.toLocaleString()}{" "}
-                      VNĐ
+                      <strong>Email:</strong> {selectedUser.email}
                     </Typography>
-
-                    <Box mt={2}>
-                      <Typography variant="h6">Sản Phẩm</Typography>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Tên sản phẩm</TableCell>
-                            <TableCell>Số lượng</TableCell>
-                            <TableCell>Giá</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {selectedOrder.items.map((item, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{item.name}</TableCell>
-                              <TableCell>{item.quantity}</TableCell>
-                              <TableCell>
-                                {item.price.toLocaleString()} VNĐ
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </Box>
-
-                    <Box mt={2}>
-                      <Typography variant="h6">Thông Tin Khách Hàng</Typography>
-                      <Typography>Tên: {selectedOrder.buyerName}</Typography>
-                      <Typography>Email: {selectedOrder.buyerEmail}</Typography>
-                      <Typography>
-                        Địa chỉ: {selectedOrder.buyerAddress}
-                      </Typography>
-                      <Typography>
-                        Số điện thoại: {selectedOrder.buyerPhone}
-                      </Typography>
-                    </Box>
+                    <Typography>
+                      <strong>Phone Number:</strong> {selectedUser.phoneNumber}
+                    </Typography>
+                    <Typography>
+                      <strong>Address:</strong> {selectedUser.address}
+                    </Typography>
+                    <Typography>
+                      <strong>Role:</strong> {selectedUser.role || "User"}
+                    </Typography>
                   </Box>
                 )}
               </DialogContent>
@@ -248,4 +194,4 @@ const MyOrder = () => {
   );
 };
 
-export default MyOrder;
+export default UserList;

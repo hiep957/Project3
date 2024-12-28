@@ -1,5 +1,5 @@
-import * as React from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import React from "react";
+import { useForm, useFieldArray, Controller, get } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
@@ -7,8 +7,8 @@ import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 
 import { useAppDispatch } from "../../redux/hooks";
-
-import { addCategories, getCategories } from "../../redux/slice/categorySlice";
+import { getCategories } from "../../redux/slice/categorySlice";
+import { toast } from "react-toastify";
 
 const style = {
   position: "absolute",
@@ -22,22 +22,29 @@ const style = {
   p: 4,
 };
 
-interface BasicModalProps {
+interface ModalUpdateCategoryProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  category: { _id: string; name: string; subcategories: { name: string }[] };
 }
 
 type CategoryFormData = {
+  _id: string;
   name: string;
   subcategories: { name: string }[];
 };
 
-const BasicModal: React.FC<BasicModalProps> = ({ open, setOpen }) => {
+const ModalUpdateCategory: React.FC<ModalUpdateCategoryProps> = ({
+  open,
+  setOpen,
+  category,
+}) => {
   const dispatch = useAppDispatch();
+  console.log("category trong ModalUpdateCategory: ", category);
   const { control, handleSubmit, reset } = useForm<CategoryFormData>({
     defaultValues: {
-      name: "",
-      subcategories: [{ name: "" }],
+      name: category?.name || "",
+      subcategories: category?.subcategories || [{ name: "" }],
     },
   });
 
@@ -46,12 +53,29 @@ const BasicModal: React.FC<BasicModalProps> = ({ open, setOpen }) => {
     name: "subcategories",
   });
 
-  const onSubmit = (data: CategoryFormData) => {
-    dispatch(
-      addCategories({ name: data.name, subcategories: data.subcategories })
-    ).then(() => dispatch(getCategories()));
-    reset(); // Reset form sau khi submit
-    setOpen(false); // Đóng modal
+  const onSubmit = async (data: CategoryFormData) => {
+    console.log("data trong ModalUpdateCategory: ", data);
+    const response = await fetch(
+      `http://localhost:5000/api/v1/admin/categories/update/${category._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      }
+    );
+    if (response.ok) {
+      const data = await response.json();
+      toast.success("Category updated successfully");
+      getCategories();
+      return data;
+    } else {
+      const error = await response.json();
+      toast.error(error.message);
+      throw new Error(error.message);
+    }
   };
 
   const handleClose = () => {
@@ -59,20 +83,16 @@ const BasicModal: React.FC<BasicModalProps> = ({ open, setOpen }) => {
     setOpen(false);
   };
 
-  // useEffect(() => {
-  //   dispatch(getCategories());
-  // }, [dispatch]);
-
   return (
     <Modal
       open={open}
       onClose={handleClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
+      aria-labelledby="modal-update-category"
+      aria-describedby="modal-update-category-description"
     >
       <Box sx={style}>
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          Add New Category
+        <Typography id="modal-update-category" variant="h6" component="h2">
+          Update Category
         </Typography>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -138,7 +158,7 @@ const BasicModal: React.FC<BasicModalProps> = ({ open, setOpen }) => {
             fullWidth
             sx={{ mt: 2 }}
           >
-            Add Category
+            Update Category
           </Button>
         </form>
       </Box>
@@ -146,4 +166,4 @@ const BasicModal: React.FC<BasicModalProps> = ({ open, setOpen }) => {
   );
 };
 
-export default BasicModal;
+export default ModalUpdateCategory;

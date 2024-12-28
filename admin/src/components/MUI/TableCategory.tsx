@@ -19,10 +19,11 @@ import { useState } from "react";
 import { Modal } from "@mui/material";
 import { ModalDeleteCategory } from "../Modal/ModalDeleteCategory";
 import { useAppDispatch } from "../../redux/hooks";
+import ModalUpdateCategory from "../Modal/ModalUpdateCategory";
 
 function Row({ category, index }: { category: Category; index: number }) {
   const [open, setOpen] = React.useState(false);
-
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -55,9 +56,17 @@ function Row({ category, index }: { category: Category; index: number }) {
             {category.name}
           </TableCell>
           <TableCell align="center">
+            <ModalUpdateCategory
+              open={openUpdateModal}
+              setOpen={setOpenUpdateModal}
+              category={category}
+            />
             {/* Nút Chỉnh sửa */}
             <div className="w-full flex justify-center p-2">
-              <MdOutlineModeEdit className="w-6 h-6 hover:bg-slate-200 rounded transition-all  " />
+              <MdOutlineModeEdit
+                className="w-6 h-6 hover:bg-slate-200 rounded transition-all  "
+                onClick={() => setOpenUpdateModal(true)}
+              />
             </div>
           </TableCell>
           <TableCell align="center">
@@ -68,10 +77,6 @@ function Row({ category, index }: { category: Category; index: number }) {
                 onClick={handleOpenModal}
               />
             </div>
-          </TableCell>
-          <TableCell align="center">
-            {/* Nút Thêm SubCategory */}
-            <button>Thêm SubCategory</button>
           </TableCell>
         </TableRow>
         <TableRow>
@@ -85,24 +90,12 @@ function Row({ category, index }: { category: Category; index: number }) {
                   <TableHead>
                     <TableRow>
                       <TableCell align="center">Name</TableCell>
-                      <TableCell align="center">Chỉnh sửa</TableCell>
-                      <TableCell align="center">Xóa</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {category.subcategories.map((sub) => (
                       <TableRow key={sub._id}>
                         <TableCell align="center">{sub.name}</TableCell>
-                        <TableCell align="center">
-                          <div className="w-full flex justify-center p-2">
-                            <MdOutlineModeEdit className="w-6 h-6 hover:bg-slate-200 rounded transition-all  " />
-                          </div>
-                        </TableCell>
-                        <TableCell align="center">
-                          <div className="w-full flex justify-center">
-                            <MdDeleteOutline className="w-6 h-6 hover:bg-red-500 rounded transition-all " />
-                          </div>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -134,7 +127,6 @@ export default function CollapsibleTable({
               <TableCell align="center">Name</TableCell>
               <TableCell align="center">Chỉnh sửa</TableCell>
               <TableCell align="center">Xóa</TableCell>
-              <TableCell align="center">Thêm SubCategory</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

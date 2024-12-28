@@ -38,6 +38,26 @@ export const Product = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
 
+  const removeProduct = async (productId: string, isActive: boolean) => {
+    const response = await fetch(
+      `${API_URL}/api/v1/admin/products/update/${productId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isActive }),
+        credentials: "include",
+      }
+    );
+    if (response.ok) {
+      toast.success("Product deleted successfully");
+      fetchProducts();
+    } else {
+      toast.error("Failed to delete product");
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       toast.error("Please login first");
@@ -92,32 +112,6 @@ export const Product = () => {
     <Container className="m-4">
       <h2 className="text-xl font-bold mb-4">Product List</h2>
       <Paper className="p-4 mb-6">
-        <div className="flex gap-4 mb-4">
-          <TextField
-            label="Search"
-            name="search"
-            value={filters.search}
-            onChange={handleFilterChange}
-            variant="outlined"
-            size="small"
-          />
-          <TextField
-            label="Category"
-            name="category"
-            value={filters.category}
-            onChange={handleFilterChange}
-            variant="outlined"
-            size="small"
-          />
-          <TextField
-            label="Brand"
-            name="brand"
-            value={filters.brand}
-            onChange={handleFilterChange}
-            variant="outlined"
-            size="small"
-          />
-        </div>
         <Button variant="contained" color="primary">
           <Link to="/product/add-product" className="text-white">
             Add Product
@@ -146,20 +140,28 @@ export const Product = () => {
               <TableBody>
                 {products.map((product, index) => (
                   <TableRow key={product._id}>
-                    <TableCell>{pagination.page * pagination.rowsPerPage + index + 1}</TableCell>
+                    <TableCell>
+                      {pagination.page * pagination.rowsPerPage + index + 1}
+                    </TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.brand}</TableCell>
                     <TableCell>{product.price}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>{product.subcategory}</TableCell>
                     <TableCell>
-                      <Link to={`/product/${product._id}`} className="text-blue-500">
+                      <Link
+                        to={`/product/${product._id}`}
+                        className="text-blue-500"
+                      >
                         Edit
                       </Link>
                       {" | "}
-                      <Link to={`/product/delete-product/${product._id}`} className="text-red-500">
+                      <button
+                        onClick={() => removeProduct(product._id, false)}
+                        className="text-red-500"
+                      >
                         Delete
-                      </Link>
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}

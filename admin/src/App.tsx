@@ -15,6 +15,7 @@ import EditProduct from "./pages/EditProduct";
 import { Product } from "./pages/Product";
 import Users from "./pages/Users";
 import MyOrder from "./pages/Orders";
+import UserList from "./pages/Users";
 const API_URL = import.meta.env.VITE_API_URL;
 function App() {
   return (
@@ -35,7 +36,7 @@ function App() {
               path="/users"
               element={
                 <Layout>
-                  <Users></Users>
+                  <UserList></UserList>
                 </Layout>
               }
             />
