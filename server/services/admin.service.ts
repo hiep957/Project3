@@ -172,26 +172,17 @@ export const adminUpdateCategoryService = asyncHandler(
   ) => {
     const { name, subcategories } = req.body;
     const updateFields: any = {};
-
-    if (name !== undefined) {
-      updateFields.name = name;
+    const category = await CategoryModel.findById(req.params.categoryId);
+    if (!category) {
+      throw new BadRequestError("Category not found");
     }
-    if (subcategories !== undefined) {
-      updateFields.subcategories = subcategories;
-    }
-
-    const updateCategory = await CategoryModel.findByIdAndUpdate(
-      req.params.categoryId,
-      updateFields,
-      { new: true }
-    );
-
-    if (!updateCategory) {
-      throw new BadRequestError("Category not updated");
-    }
+    category.name = name;
+    category.subcategories = subcategories;
+    const updatedCategory = await category.save();
+    
     res.status(200).json({
-      message: "Category updated successfully",
-      category: updateCategory,
+      status: "Update successful",
+      data: updatedCategory,
     });
   }
 );
@@ -227,7 +218,7 @@ export const adminAddProductService = asyncHandler(
       sizes,
       category,
       subcategory,
-      textEditor
+      textEditor,
     } = req.body;
     console.log("req.body 21", req.body);
     console.log("req.files 213", req.files);
@@ -280,7 +271,7 @@ export const adminAddProductService = asyncHandler(
       product_Images: detailImagePaths,
       category: category,
       subcategory: subcategory,
-      textEditor: textEditor
+      textEditor: textEditor,
     });
     const product = await newProduct.save();
     res.status(201).json({
@@ -307,7 +298,7 @@ export const adminUpdateProductService = asyncHandler(
       sizes,
       category,
       subcategory,
-      textEditor
+      textEditor,
     } = req.body;
     const { productId } = req.params;
     console.log("req.body update", req.body);
@@ -381,7 +372,7 @@ export const adminUpdateProductService = asyncHandler(
     if (sizes) product.sizes = sizes;
     if (category) product.category = category;
     if (subcategory) product.subcategory = subcategory;
-    if (textEditor) product.textEditor = textEditor;  
+    if (textEditor) product.textEditor = textEditor;
     const productUpdated = await product.save();
     res.status(200).json({
       status: "Update successful",

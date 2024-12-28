@@ -36,6 +36,7 @@ export const getProductsService = asyncHandler(
       subcategory,
     } = req.query;
 
+    console.log(search)
     const query: any = { isActive: true };
     let sortQuery = {};
     //search

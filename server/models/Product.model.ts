@@ -68,9 +68,10 @@ const ProductSchema: Schema<IProduct> = new Schema(
   { timestamps: true }
 );
 
-ProductSchema.index({ name: "text", description: "text" });
-ProductSchema.index({ category: 1 });
-ProductSchema.index({ subcategory: 1 });
-ProductSchema.index({ brand: 1 });
+ProductSchema.index({ name: "text" });
+ProductSchema.index({ description: "text" });
+ProductSchema.index({ category: "text" });
+ProductSchema.index({ subcategory: "text" });
+ProductSchema.index({ brand: "text" });
 
 export default mongoose.model<IProduct>("Product", ProductSchema);
